@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tapwright"
+version = "0.0.1.dev0"
+description = "CI-native, open-core UDS/DoIP diagnostic test runner and DBC/ARXML-aware trace analyzer for automotive software testing."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Tapwright contributors" },
+]
+keywords = [
+    "automotive",
+    "can-bus",
+    "uds",
+    "doip",
+    "diagnostics",
+    "iso14229",
+    "dbc",
+    "arxml",
+    "pytest",
+    "testing",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Networking",
+]
+
+# Intentionally empty for now — this is scaffolding, not L0-L3 functionality
+# yet. Real dependencies (python-can, cantools, python-can-isotp, udsoncan,
+# doipclient, asammdf, pytest) get added as each layer is implemented, per
+# ARCHITECTURE.md, with license compatibility (Apache-2.0/MIT/BSD only)
+# verified before each addition.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "pre-commit",
+]
+
+[project.urls]
+Homepage = "https://github.com/SKIFIN-IT-SERVICES/tapwright"
+Repository = "https://github.com/SKIFIN-IT-SERVICES/tapwright"
+Issues = "https://github.com/SKIFIN-IT-SERVICES/tapwright/issues"
+Changelog = "https://github.com/SKIFIN-IT-SERVICES/tapwright/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
