@@ -6,6 +6,22 @@ influence over it, not the worst time to show up.
 
 Please also read the [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## The development process
+
+This project follows a specific issue-first, test-first loop — file an
+issue, write a test plan, implement test-driven (red/green/refactor),
+check in — documented in full in [PROCESS.md](PROCESS.md), including what
+to do when a bug surfaces after merge (root cause analysis, not a quiet
+patch). Read that before your first PR; this file covers environment setup
+and the mechanics, PROCESS.md covers the workflow itself.
+
+If you're using Claude Code, [`.claude/skills/`](.claude/skills/) has a
+skill for each step of that loop (`file-issue`, `test-plan`, `tdd-develop`,
+`root-cause-analysis`, `checkin`).
+
+For the full engineering spec behind any given requirement — what exactly
+`TOOL-REQ-022` or `FW-REQ-051` means — see [`docs/`](docs/).
+
 ## Before you write code
 
 For anything beyond a small fix, open an issue first (or comment on an
@@ -40,6 +56,11 @@ pip install -e ".[dev]"
 pre-commit install
 ```
 
+`pre-commit install` sets up both the pre-commit (lint/format) and
+commit-msg (Conventional Commits, see below) hooks in one step — see
+[`.pre-commit-config.yaml`](.pre-commit-config.yaml)'s
+`default_install_hook_types`.
+
 ## Running tests
 
 **No hardware required.** The full test suite runs against Linux's virtual
@@ -65,14 +86,30 @@ anything in `diag/` — should carry type hints; that module's API is
 deliberately kept clean enough for external tools to build on later, so
 treat its public surface with extra care.
 
+## Commit messages — Conventional Commits
+
+Format: `<type>(<scope>): <description>` — e.g.
+`feat(diag): add UDS 0x27 security access hook points`.
+
+- **Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`
+- **Scope:** the module touched (`hal`, `buses`, `dbc_arxml`, `diag`,
+  `runner`, `report`, `trace`) or `repo` for cross-cutting changes
+
+This is enforced by a commit-msg hook — a malformed message is rejected
+locally, before it reaches CI. See [PROCESS.md](PROCESS.md#4-checkin) for
+the full checkin checklist (branch naming, CHANGELOG, PR template).
+
 ## Pull requests
 
 - Keep PRs scoped to one change. A PR that both fixes a bug and reformats
   unrelated files is harder to review and harder to revert if something's
   wrong.
-- Add or update tests for behavior you change.
+- Add or update tests for behavior you change — ideally written test-first,
+  per [PROCESS.md](PROCESS.md#3-tdd-development-red--green--refactor).
 - Update `CHANGELOG.md` under `[Unreleased]`.
 - CI must pass (lint + tests) before merge.
+- Use the [PR template](.github/PULL_REQUEST_TEMPLATE.md) — it's
+  auto-populated when you open the PR.
 
 ## Where to start
 

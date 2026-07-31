@@ -44,7 +44,9 @@ adopt it without a procurement process.
   CI container — one package, not a "server edition" SKU.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the full layer breakdown and
-[ROADMAP.md](ROADMAP.md) for the milestone plan.
+[ROADMAP.md](ROADMAP.md) for the milestone plan. For the full, detailed
+engineering specification — every requirement numbered, prioritized, and
+tied to acceptance criteria — see [`docs/`](docs/).
 
 ## What it explicitly does not do
 
@@ -66,8 +68,11 @@ Not on PyPI yet. Watch [ROADMAP.md](ROADMAP.md) or the repo's Releases page.
 Contributions are very welcome, especially before `v0.1` while the shape of
 the project is still being decided. See [CONTRIBUTING.md](CONTRIBUTING.md)
 for the dev setup, testing (no hardware required — everything runs against
-a virtual CAN bus), and the DCO sign-off process. Please also read the
-[Code of Conduct](CODE_OF_CONDUCT.md).
+a virtual CAN bus), and the DCO sign-off process. The actual development
+workflow — issue → test plan → TDD → checkin, and what to do when a bug
+surfaces after merge — is in [PROCESS.md](PROCESS.md); if you're using
+Claude Code, [`.claude/skills/`](.claude/skills/) has a skill for each step.
+Please also read the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Security
 
