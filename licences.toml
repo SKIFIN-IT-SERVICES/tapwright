@@ -1,0 +1,158 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Dependency licence manifest — the machine-readable half of FW-REQ-017.
+#
+# Every dependency declared in pyproject.toml must have an entry here, and every
+# entry must be verified against the actual package metadata rather than
+# assumed. `docs/framework-requirements.md` §2 originally recorded two of these
+# from estimate rather than verification, and got both wrong in the direction
+# that matters:
+#
+#   python-can   recorded BSD-2-Clause  ->  actually LGPL-3.0  (worse than assumed)
+#   can-isotp    recorded LGPL-3.0      ->  actually MIT       (better than assumed)
+#
+# That is the argument for this file existing. Verified 2026-08-01; re-verify at
+# each version bump, because a project can relicense.
+#
+# Enforced by tools/check_licences.py in the `t0-static` CI job.
+
+[policy]
+# Permissive licences: usable anywhere, including the distributed core.
+allowed = [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "PSF-2.0",
+    "MPL-2.0",
+]
+
+# Weak copyleft: permitted only as an unmodified, dynamically-imported
+# dependency installed from PyPI — never vendored, forked, or frozen into a
+# binary (C-9, FW-REQ-019). Each such dependency needs isolation = "dependency-only".
+isolation_required = ["LGPL-2.1", "LGPL-2.1-or-later", "LGPL-3.0", "LGPL-3.0-or-later"]
+
+# Strong copyleft: never, in any form, in this repository. Tools under these
+# licences (boofuzz GPL-2.0, CaringCaribou GPL-3.0) can only ever be invoked
+# across a process boundary, from the separate L4 repository — which is a large
+# part of why DIAG-05's interception API must work across processes.
+forbidden = [
+    "GPL-2.0",
+    "GPL-3.0",
+    "AGPL-3.0",
+    "SSPL-1.0",
+    "BUSL-1.1",
+    "Proprietary",
+]
+
+# ---------------------------------------------------------------------------
+# Runtime dependencies. `pyproject.toml` currently declares none — each lands
+# with the layer that needs it, and each needs its entry here first.
+# ---------------------------------------------------------------------------
+
+[[dependency]]
+name = "python-can"
+licence = "LGPL-3.0"
+verified = "2026-08-01"
+role = "L0 hardware abstraction (FW-REQ-010, TOOL-REQ-001-007)"
+isolation = "dependency-only"
+notes = """
+LGPL-3.0, NOT BSD-2-Clause as docs/framework-requirements.md originally recorded.
+Imported at runtime from PyPI, unmodified. Never vendored into this tree, never
+forked, never frozen into a single-file binary — which is why FW-REQ-022 (static
+Linux binary) is BLOCKED pending legal opinion. HAL-08 enforces the
+no-vendoring half of this mechanically.
+"""
+
+[[dependency]]
+name = "cantools"
+licence = "MIT"
+verified = "2026-08-01"
+role = "DBC/ARXML/A2L decode (FW-REQ-011, TOOL-REQ-014/015/017)"
+notes = "Healthy upstream (~2,300 stars). Contribute ARXML-depth fixes upstream rather than forking (BUS-02)."
+
+[[dependency]]
+name = "can-isotp"
+licence = "MIT"
+verified = "2026-08-01"
+role = "ISO-TP transport (FW-REQ-012, TOOL-REQ-022)"
+notes = """
+MIT, NOT LGPL-3.0 as docs/framework-requirements.md originally recorded. The
+isolation caveat that requirement attached to it does not apply: this can be a
+plain core dependency.
+"""
+
+[[dependency]]
+name = "udsoncan"
+licence = "MIT"
+verified = "2026-08-01"
+role = "UDS client (FW-REQ-013, TOOL-REQ-022/023/024)"
+
+[[dependency]]
+name = "doipclient"
+licence = "MIT"
+verified = "2026-08-01"
+role = "DoIP transport (FW-REQ-014, TOOL-REQ-023)"
+
+[[dependency]]
+name = "asammdf"
+licence = "LGPL-3.0"
+verified = "2026-08-01"
+role = "MDF4 read/write (FW-REQ-015, TOOL-REQ-021)"
+isolation = "dependency-only"
+extra = "mdf4"
+notes = """
+LGPL-3.0 as originally estimated — the estimate happened to be right here, but
+it was still an estimate. Ships as an optional extra (`pip install tapwright[mdf4]`)
+so the core installs and passes its full suite without it (BUS-06).
+"""
+
+[[dependency]]
+name = "pytest"
+licence = "MIT"
+verified = "2026-08-01"
+role = "Test runner and the L3 authoring substrate (FW-REQ-016, TOOL-REQ-028-030)"
+
+# ---------------------------------------------------------------------------
+# Development-only dependencies. Not distributed, so the policy is looser — but
+# still no strong copyleft, because a GPL dev tool that gets imported by shipped
+# code is exactly the accident this manifest is meant to catch.
+# ---------------------------------------------------------------------------
+
+[[dependency]]
+name = "pytest-cov"
+licence = "MIT"
+verified = "2026-08-14"
+role = "Coverage measurement for the ratchet (dev only)"
+
+[[dependency]]
+name = "ruff"
+licence = "MIT"
+verified = "2026-08-14"
+role = "Lint + format, T0 (dev only)"
+
+[[dependency]]
+name = "mypy"
+licence = "MIT"
+verified = "2026-08-14"
+role = "Static typing, T0 (dev only)"
+
+[[dependency]]
+name = "pre-commit"
+licence = "MIT"
+verified = "2026-08-14"
+role = "Local hook runner (dev only)"
+
+[[dependency]]
+name = "hypothesis"
+licence = "MPL-2.0"
+verified = "2026-08-14"
+role = "Property-based testing, T4 (dev only)"
+notes = "MPL-2.0 is file-level copyleft and dev-only here; it is not imported by distributed code."
+
+[[dependency]]
+name = "tomli"
+licence = "MIT"
+verified = "2026-08-14"
+role = "TOML parsing on Python 3.10, where tomllib is unavailable (dev only)"
