@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -23,5 +25,35 @@ repos:
       - id: conventional-pre-commit
         stages: [commit-msg]
         args: ["feat", "fix", "docs", "test", "refactor", "chore", "ci"]
+
+  # The guardrails, run locally so they fail in seconds rather than after a
+  # push. CI runs the same scripts — this is a faster copy of that gate, not a
+  # different one.
+  - repo: local
+    hooks:
+      - id: spdx-headers
+        name: SPDX headers on every source file (FW-REQ-050)
+        entry: python tools/check_spdx.py
+        language: system
+        pass_filenames: false
+
+      - id: licence-policy
+        name: Dependency licences within policy (FW-REQ-017, C-9)
+        entry: python tools/check_licences.py
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|licences\.toml|src/)
+
+      - id: fixture-integrity
+        name: Fixtures unmodified and provenance recorded (AGENTS.md §3)
+        entry: python tools/check_fixtures.py
+        language: system
+        pass_filenames: false
+
+      - id: forbidden-capability
+        name: No security-bypass capability (C-10, DIAG-08)
+        entry: python tools/check_forbidden.py
+        language: system
+        pass_filenames: false
 
 default_install_hook_types: [pre-commit, commit-msg]

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """L3 — pytest plugin: fixtures, deterministic wait helpers, CI entrypoints.
 
 Tests are plain pytest — this module is the fixture layer (`ecu`, `bus`,

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """L0 — Hardware abstraction.
 
 One interface, many backends: SocketCAN, gs_usb (CANable/candleLight-class

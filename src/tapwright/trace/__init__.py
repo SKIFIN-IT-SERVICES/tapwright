@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """L1/L3 — Trace read/write and query.
 
 BLF, ASC, and MDF4 read and write — interop with the Vector-format

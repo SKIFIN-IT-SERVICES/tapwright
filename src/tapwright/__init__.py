@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Tapwright — CI-native diagnostics for the automotive bus you already have.
 
 See ARCHITECTURE.md at the repository root for the layer breakdown
