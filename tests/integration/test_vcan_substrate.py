@@ -44,11 +44,11 @@ def test_frame_sent_on_vcan_is_received(vcan_channel):
     payload = b"\xde\xad\xbe\xef"
 
     with socket.socket(socket.AF_CAN, socket.SOCK_RAW, socket.CAN_RAW) as receiver:
-        receiver.bind((vcan_channel(),))
+        receiver.bind((vcan_channel,))
         receiver.settimeout(2.0)
 
         with socket.socket(socket.AF_CAN, socket.SOCK_RAW, socket.CAN_RAW) as sender:
-            sender.bind((vcan_channel(),))
+            sender.bind((vcan_channel,))
             sender.send(struct.pack(CAN_FRAME_FMT, can_id, len(payload), payload))
 
         frame = receiver.recv(CAN_FRAME_SIZE)
