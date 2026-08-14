@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -48,9 +50,11 @@ dependencies = []
 dev = [
     "pytest>=8",
     "pytest-cov",
+    "hypothesis>=6",          # T4 property/fuzz tier
     "ruff",
     "mypy",
     "pre-commit",
+    "tomli; python_version<'3.11'",  # tomllib landed in 3.11; the floor is 3.10
 ]
 
 [project.urls]
@@ -76,3 +80,23 @@ warn_redundant_casts = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The verification ladder (DEVELOPMENT-PLAN §3) is expressed as directories, so
+# CI can run one tier at a time and a change can declare the tier it must reach:
+#   tests/unit          T1  no I/O
+#   tests/integration   T2  full stack on vcan, zero hardware
+#   tests/differential  T3  vs. the wrapped library called directly
+#   tests/property      T4  hypothesis-generated inputs
+markers = [
+    "requires_vcan: needs a vcan interface (Linux only; skipped elsewhere)",
+    "requires_hardware: needs a physical CAN interface — never runs in CI",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["tapwright"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
