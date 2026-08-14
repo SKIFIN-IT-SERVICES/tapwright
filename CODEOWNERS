@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Code ownership. GitHub requires review from the listed owners before a PR
+# touching these paths can merge (with branch protection's "require review from
+# Code Owners" enabled).
+#
+# The point of this file is narrower than "who knows this code": it is the
+# mechanical half of the oracle rule in AGENTS.md §3. Fixtures and expected
+# outputs are the authority that decides whether our decode is correct. Nothing
+# changes them without a human who did not write the code under test.
+
+# Default: the maintainers own everything not otherwise claimed.
+*                                   @SKIFIN-IT-SERVICES/maintainers
+
+# THE ORACLE LIBRARY — see DEVELOPMENT-PLAN §4.3, §4.5, AGENTS.md §3.
+# Changes here require maintainer approval AND a `fixture-change:` commit
+# trailer (enforced by the `guardrails` CI job). A fixture edit bundled into a
+# feature commit is the failure mode this exists to prevent.
+/fixtures/                          @SKIFIN-IT-SERVICES/maintainers
+/tests/differential/expected/       @SKIFIN-IT-SERVICES/maintainers
+
+# The guardrails themselves. An agent that can edit the check that constrains
+# it is not constrained.
+/tools/check_spdx.py                @SKIFIN-IT-SERVICES/maintainers
+/tools/check_forbidden.py           @SKIFIN-IT-SERVICES/maintainers
+/tools/check_licences.py            @SKIFIN-IT-SERVICES/maintainers
+/tools/check_fixtures.py            @SKIFIN-IT-SERVICES/maintainers
+/tools/coverage_ratchet.py          @SKIFIN-IT-SERVICES/maintainers
+/.github/workflows/                 @SKIFIN-IT-SERVICES/maintainers
+/AGENTS.md                          @SKIFIN-IT-SERVICES/maintainers
+/CODEOWNERS                         @SKIFIN-IT-SERVICES/maintainers
+
+# Licence and dependency decisions are a maintainer call (C-7, C-9).
+/licences.toml                      @SKIFIN-IT-SERVICES/maintainers
+/pyproject.toml                     @SKIFIN-IT-SERVICES/maintainers
+/LICENSE                            @SKIFIN-IT-SERVICES/maintainers
+/NOTICE                             @SKIFIN-IT-SERVICES/maintainers
