@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Composite action: bring up a vcan0 interface for the zero-hardware test path
+# (ADR-005, C-5, FW-REQ-031). Used by every CI job at T2 or above.
+#
+# The vcan kernel module is not loaded by default on GitHub's ubuntu-latest
+# runners and lives in the linux-modules-extra package rather than the base
+# image (verified against the runner's own kernel — modprobe fails with
+# "Module vcan not found" otherwise), so that install has to happen first.
+
+name: Bring up vcan0
+description: Loads the vcan kernel module and brings up a vcan0 interface
+
+runs:
+  using: composite
+  steps:
+    - name: Install and load the vcan kernel module
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y "linux-modules-extra-$(uname -r)"
+        sudo modprobe vcan
+    - name: Create and bring up vcan0
+      shell: bash
+      run: |
+        sudo ip link add dev vcan0 type vcan
+        sudo ip link set up vcan0
+        ip -details link show vcan0
