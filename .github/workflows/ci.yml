@@ -1,3 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# CI is the verification ladder (DEVELOPMENT-PLAN §3). Each job is a tier, and
+# every change declares the highest tier it must reach:
+#
+#   T0 static       lint, format, types, SPDX, licence policy
+#   T1 unit         no I/O
+#   T2 integration  full stack on vcan + the virtual ECU, zero hardware
+#   T3 differential vs. the wrapped library called directly, or a golden trace
+#   T4 property     hypothesis-generated inputs; invariants hold; no crash
+#   T5 human        reviewer approval against the SPEC, not against the diff
+#
+# T3 is the tier that makes this project work: because Tapwright wraps rather
+# than rewrites, we can nearly always ask whether our abstraction produces
+# byte-identical results to calling the underlying library directly. That is a
+# cheap, strong oracle for the most dangerous failure mode in this domain — a
+# silently wrong decode, which produces plausible numbers and raises nothing.
+#
+# The `guardrails` job is not optional. See §4.5.
+
 name: CI
 
 on:
@@ -8,8 +28,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint:
+  t0-static:
+    name: T0 · static
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,12 +42,22 @@ jobs:
         with:
           python-version: "3.10"
       - run: pip install -e ".[dev]"
-      - run: ruff check .
-      - run: ruff format --check .
+      - name: ruff check
+        run: ruff check .
+      - name: ruff format
+        run: ruff format --check .
+      - name: mypy
+        run: mypy src
+      - name: SPDX headers (FW-REQ-050)
+        run: python tools/check_spdx.py
+      - name: Licence policy (FW-REQ-017, C-7, C-9)
+        run: python tools/check_licences.py
 
-  test:
+  t1-unit:
+    name: T1 · unit (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
@@ -31,9 +66,120 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
-      # TODO(M1): once the hal/ layer lands (ARCHITECTURE.md), set up vcan
-      # here so tests exercise the real zero-hardware bus path, e.g.:
-      #   sudo modprobe vcan
-      #   sudo ip link add dev vcan0 type vcan
-      #   sudo ip link set up vcan0
-      - run: pytest --cov=tapwright --cov-report=term-missing
+      - run: pytest tests/unit tests/test_smoke.py -v
+
+  t2-integration:
+    name: T2 · integration (vcan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      # ADR-005 / C-5: the zero-hardware path is first-class, never a fallback.
+      # The entire internal suite has to run here, on a stock runner, with
+      # nothing plugged in — that is both FW-REQ-031 and the contributor
+      # onboarding promise.
+      - name: Bring up vcan0
+        run: |
+          sudo modprobe vcan
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+          ip -details link show vcan0
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/integration -v
+        env:
+          TAPWRIGHT_TEST_CHANNEL: vcan0
+
+  t3-differential:
+    name: T3 · differential
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Bring up vcan0
+        run: |
+          sudo modprobe vcan
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+      - run: pip install -e ".[dev]"
+      - name: Fixture integrity (oracle library)
+        run: python tools/check_fixtures.py
+      # The tier is empty until BUS-01 lands the first differential test, and
+      # pytest exits 5 ("no tests collected") rather than 0 for an empty
+      # directory. Tolerating 5 keeps the job wired up and runnable now instead
+      # of leaving a second TODO(M1) for someone to find later; remove the
+      # tolerance once the tier has tests, so an accidentally-empty T3 fails.
+      - run: pytest tests/differential -v || [ $? -eq 5 ]
+        env:
+          TAPWRIGHT_TEST_CHANNEL: vcan0
+
+  t4-property:
+    name: T4 · property/fuzz
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Bring up vcan0
+        run: |
+          sudo modprobe vcan
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+      - run: pip install -e ".[dev]"
+      # Empty until the first hardening loop; see the note in t3-differential.
+      - run: pytest tests/property -v || [ $? -eq 5 ]
+        env:
+          TAPWRIGHT_TEST_CHANNEL: vcan0
+          HYPOTHESIS_PROFILE: ci
+
+  coverage-ratchet:
+    name: Coverage ratchet (L0-L2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Bring up vcan0
+        run: |
+          sudo modprobe vcan
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+      - run: pip install -e ".[dev]"
+      - run: pytest --cov=tapwright --cov-branch --cov-report=xml --cov-report=term-missing
+        env:
+          TAPWRIGHT_TEST_CHANNEL: vcan0
+      # 85% line / 75% branch on L0-L2, as a ratchet: may rise, never falls.
+      # No gate on L3 — failures there are loud (DECISIONS-RECORD §4).
+      - run: python tools/coverage_ratchet.py coverage.xml
+
+  guardrails:
+    name: Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # blast-radius check needs history to diff against
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install -e ".[dev]"
+
+      # The agentic-specific additions. Everything above verifies the product;
+      # this job verifies the *process* that produced it — that nobody made a
+      # failing test pass by editing what it was testing against.
+      - name: Fixture immutability + provenance
+        run: python tools/check_fixtures.py
+      - name: Fixture-change trailer + blast radius
+        if: github.event_name == 'pull_request'
+        run: python tools/check_blast_radius.py --base origin/${{ github.base_ref }}
+        env:
+          BLAST_RADIUS: ${{ github.event.pull_request.body }}
+      - name: Forbidden capability scan (C-10, ADR-003)
+        run: python tools/check_forbidden.py
+      - name: LGPL vendoring scan (C-9, HAL-08)
+        run: python tools/check_licences.py

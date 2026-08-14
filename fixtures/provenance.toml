@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Fixture provenance manifest (INF-04). Every file under fixtures/ has an entry
+# here recording where it came from, under what licence, and who verified it.
+# Enforced by tools/check_fixtures.py; format documented in PROVENANCE.md.
+#
+# The `sha256` field is what makes fixture tampering visible: it is checked on
+# every CI run, so an edit fails the build whether or not the git diff is
+# noticed in review.
+#
+# No entries yet — the corpus grows with the loops that need it, starting with
+# BUS-01 (DBC decode) and INF-05 (virtual ECU scenarios). It is deliberately
+# empty rather than pre-populated with plausible-looking files: a fixture with
+# no test pointing at it is a liability, not an asset.
+
+# [[fixture]]
+# path = "databases/multiplexed.dbc"
+# sha256 = "..."
+# origin = "self-authored"
+# licence = "Apache-2.0"
+# source = "Written for BUS-01; no external source"
+# added = "2026-08-14"
+# verified_by = "handle"
+# description = "Multiplexed signals with a 2-bit multiplexor"

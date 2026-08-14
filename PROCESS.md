@@ -2,6 +2,8 @@
 
 Tapwright is built issue-first and test-first. This document is the loop every change — feature or bugfix — goes through, and the conventions that make the loop actually work as a team scales past one contributor. If you're using Claude Code, each step below has a matching skill in [`.claude/skills/`](.claude/skills/) that walks through it interactively; this document is the process those skills implement, so it's also the reference for anyone working without them.
 
+Most of the code here is written by AI agents running unattended, which changes what this process has to defend against — an agent converges on *whatever the tests measure*, so the tests have to measure the right thing and be beyond the agent's reach. Two additions carry that weight: the **oracle** requirement in step 2, and the **fixture-immutability** rule in step 3. [`AGENTS.md`](AGENTS.md) states the invariants that hold in every step; [`LOOPS.md`](LOOPS.md) tracks the backlog those changes come from.
+
 ## The loop
 
 ```
@@ -43,6 +45,22 @@ Before any implementation code, write down what "done" means as tests — not pr
 - Ground every test case in the requirement's stated acceptance criteria (from `docs/tooling-requirements.md`) — if the acceptance criteria don't cover a case you're about to test, that's a signal the requirement itself needs a one-line update, not that you should test something ungrounded.
 - Claude Code: the `test-plan` skill drafts this from the issue and the relevant requirement ID.
 
+### Name the oracle
+
+**Every test plan must name its oracle explicitly: the executable authority that decides whether the output is correct.** Not "the tests I'm about to write" — those restate the implementation's intent, and if the same agent writes both, they agree with each other by construction while both being wrong. An oracle is a source of truth that existed *before* the implementation and was authored independently of it:
+
+| Oracle | What it looks like here | Used by |
+|---|---|---|
+| The wrapped library, called directly | Assert our output is byte-identical to calling `cantools`/`udsoncan`/`python-can` ourselves | Most `hal/`, `buses/`, `diag/` work |
+| A recorded golden trace | A BLF/ASC fixture whose decoded content is known and human-verified | `trace/`, `dbc_arxml/` |
+| A published specification | ISO 14229 (UDS), 13400 (DoIP), 15765-2 (ISO-TP) — deterministic request/response semantics | `diag/` protocol work |
+| The virtual ECU | A simulated ECU on `vcan` that responds correctly and misbehaves on demand | Anything integration-level |
+| A property that must hold | `decode(encode(x)) == x`; no input crashes the parser | Hardening work |
+
+Write the oracle down as a specific file, fixture, or reference call — "differential vs. `cantools`" is a direction, `fixtures/databases/multiplexed.dbc` decoded by `cantools` directly is an oracle. **If you cannot name one, you don't have a test plan yet** — you have a research task, and it needs a human to either narrow the goal until an oracle exists ("import ODX" doesn't have one; "resolve DID `0xF190` to `VIN` in this PDX" does) or to mark the work human-led. Some work genuinely is: API ergonomics and naming have taste as the requirement, and that's the process working, not failing.
+
+Also state the **verification tier** the change must reach (T0 static → T1 unit → T2 integration on `vcan` → T3 differential → T4 property/fuzz → T5 human) and the **blast radius**: the file set the change may touch. `fixtures/**` and `tests/differential/expected/**` are outside every blast radius, always.
+
 ## 3. TDD development (red → green → refactor)
 
 Standard Kent Beck-style TDD, applied to the test plan from step 2:
@@ -57,6 +75,22 @@ This applies at every layer (L0–L3), but **L2 (`diag/`) carries extra weight**
 - No physical hardware is needed for any of this — the full test suite runs against `vcan` (see [`CONTRIBUTING.md`](CONTRIBUTING.md#running-tests)).
 - Claude Code: the `tdd-develop` skill runs this loop, pulling test cases from the plan one at a time.
 
+### Fixtures are immutable
+
+**Never edit a file under `fixtures/` or `tests/differential/expected/` to make a failing test pass.** This is the one rule in this document with no proportionality clause attached.
+
+A differential test failing means one of two things: the implementation is wrong, or the fixture is wrong. The first is overwhelmingly more likely, and it is the *entire point* of the test — a failing differential test is the process working. Changing the expected output to match what the code produced doesn't fix anything; it deletes the bug report and guarantees nothing will ever catch that bug again. The suite goes green, the defect ships, and it decodes plausible-looking wrong numbers forever. In a tool people use to decide whether an ECU behaves correctly, that is the worst outcome available.
+
+Fixtures *are* sometimes wrong. When you believe one is:
+
+1. **Stop.** Don't change it, and don't work around it.
+2. Escalate to a maintainer with the evidence — what the fixture says, what the implementation produces, and why you believe the fixture is the wrong one.
+3. If confirmed, the fixture change lands as **its own commit**, with a `fixture-change:` trailer recording what was wrong and how the new expected value was independently verified, and CODEOWNERS approval from someone who didn't write the code under test. Never bundled into the commit that needed it to pass.
+
+CI's `guardrails` job enforces this mechanically, and `CODEOWNERS` requires the human approval. Both are backstops. The rule holds whether or not they catch you.
+
+The same applies to the coverage ratchet and the guardrail scripts themselves: if a check is in your way, that's a conversation to have, not a file to edit.
+
 ## 4. Checkin
 
 - **Branch naming:** `<type>/<short-description>`, e.g. `feat/uds-security-access-hooks`, `fix/isotp-flow-control-timeout`. Type matches the Conventional Commits type below.
@@ -65,6 +99,7 @@ This applies at every layer (L0–L3), but **L2 (`diag/`) carries extra weight**
 - Before opening the PR: `ruff check . && ruff format --check . && pytest` all pass locally. CI re-runs the same checks, but catching it locally is faster for you and cheaper for shared CI minutes.
 - Open the PR against `main` using the [PR template](.github/PULL_REQUEST_TEMPLATE.md) — it links back to the issue, lists what was tested, and checks the DCO/CHANGELOG/lint boxes.
 - One reviewer approval + green CI required to merge. Squash-merge by default, so `main`'s history reads as one Conventional Commit per shipped change.
+- **The reviewer must not have supervised the work being reviewed**, and reviews the change against the *issue and test plan*, not against the diff. Someone who watched an implementation converge over forty iterations is the worst available judge of whether the result matches what was originally asked for — by then the intent has been re-anchored to whatever the last failure was. Standing review questions: does this satisfy the goal as written, or only the tests? **What existing library does this, that we've now reimplemented?** Did it stay inside its blast radius?
 - Claude Code: the `checkin` skill runs the pre-flight checklist and drafts the commit message and PR description.
 
 ## 5. Root cause analysis (when a bug surfaces after merge)
@@ -91,7 +126,7 @@ If something breaks in CI on `main`, in review, or in the field, don't just patc
 
 ## Definition of Done
 
-A change is done when: it closes an issue, its test plan is fully green (not skipped, not `xfail`ed away), `ruff`/`mypy`/`pytest` all pass in CI, `CHANGELOG.md` is updated, and — if it touches `diag/`'s public API — [`docs/architecture.md`](docs/architecture.md) §4 has been re-read and still holds.
+A change is done when: it closes an issue, its test plan is fully green (not skipped, not `xfail`ed away) **at the verification tier the plan declared**, `ruff`/`mypy`/`pytest` and the `guardrails` job all pass in CI, no fixture was modified to get there, `CHANGELOG.md` is updated, and — if it touches `diag/`'s public API — [`docs/architecture.md`](docs/architecture.md) §4 has been re-read and still holds.
 
 ## Why this is worth the overhead
 

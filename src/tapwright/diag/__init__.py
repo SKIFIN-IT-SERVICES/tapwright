@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """L2 — Diagnostics engine.
 
 UDS (ISO 14229) client over ISO-TP and DoIP (ISO 13400), ODX/PDX read-only

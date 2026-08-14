@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Smoke test: the package installs and imports cleanly.
 
 This is intentionally the only test today — it exists so CI is green from

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """L1 — DBC / ARXML / LDF / A2L decode.
 
 Symbolic decode of bus traffic from DBC and ARXML (Classic + Adaptive

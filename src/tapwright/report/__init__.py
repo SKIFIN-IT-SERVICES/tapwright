@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """L3 — Report generation.
 
 HTML and JSON test reports: pass/fail, timing, decoded frames. See
