@@ -11,12 +11,15 @@ projects like Gallia) to wrap it later without forking it. See
 ARCHITECTURE.md at the repository root before changing this module's
 public surface.
 
-Implemented so far: `virtual_ecu` (INF-05, the zero-hardware UDS responder),
-`isotp_transport` (DIAG-01, ISO-TP over `hal.Bus`), and `uds_client` +
-`connection` (DIAG-02, the UDS client itself — `open_uds_client()` is the
-main entry point). Submodules are accessed directly
-(`tapwright.diag.uds_client`, etc.) rather than re-exported here, so
-importing `tapwright.diag` itself stays cheap — it doesn't pull in
-`can`/`isotp`/`udsoncan` unless a submodule that actually needs them is
-imported. DoIP transport (DIAG-03) is not yet built.
+Implemented so far: `virtual_ecu` (INF-05/DIAG-03, the zero-hardware UDS
+responder — CAN via `ecu.py`/`transport.py`, DoIP via
+`doip_ecu.py`/`doip_transport.py`, one shared `ProtocolState`),
+`isotp_transport` (DIAG-01, ISO-TP over `hal.Bus`), `uds_client` +
+`connection` (DIAG-02, the CAN-side client — `open_uds_client()`), and
+`doip_client` (DIAG-03, the DoIP-side client — `open_doip_uds_client()`,
+returning the same `udsoncan.Client` type). Submodules are accessed
+directly (`tapwright.diag.uds_client`, etc.) rather than re-exported here,
+so importing `tapwright.diag` itself stays cheap — it doesn't pull in
+`can`/`isotp`/`udsoncan`/`doipclient` unless a submodule that actually
+needs them is imported.
 """
