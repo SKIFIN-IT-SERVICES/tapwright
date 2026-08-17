@@ -39,19 +39,19 @@ classifiers = [
     "Topic :: System :: Networking",
 ]
 
-# First three real dependencies (INF-05, TOOL-REQ-026; HAL-01/02): the
-# virtual ECU and the HAL SocketCAN backend both ship as part of the
-# installed package, not repo-only tooling — TOOL-REQ-026's "pip
-# install-only user" acceptance criterion requires it. Each has a verified
-# entry in licences.toml; python-can is LGPL-3.0 (NOT BSD-2-Clause — an
-# earlier estimate was wrong, see docs/framework-requirements.md's
-# correction note) and used as a dependency-only, never vendored (C-9,
-# FW-REQ-019, HAL-08). Remaining layers (cantools, doipclient, asammdf) get
-# added as BUS/DIAG loops need them.
+# Real dependencies added as each loop needs them (INF-05, HAL-01/02,
+# DIAG-01/02/03) — the virtual ECU and HAL backends ship as part of the
+# installed package, not repo-only tooling, per TOOL-REQ-026's "pip
+# install-only user" acceptance criterion. Each has a verified entry in
+# licences.toml; python-can is LGPL-3.0 (NOT BSD-2-Clause — an earlier
+# estimate was wrong, see docs/framework-requirements.md's correction note)
+# and used as a dependency-only, never vendored (C-9, FW-REQ-019, HAL-08).
+# Remaining layers (cantools, asammdf) get added as BUS loops need them.
 dependencies = [
     "python-can>=4.3",
     "can-isotp>=2",
     "udsoncan>=1.26",
+    "doipclient>=1.1",
 ]
 
 [project.optional-dependencies]

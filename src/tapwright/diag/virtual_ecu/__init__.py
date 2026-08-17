@@ -20,17 +20,22 @@ Layering, innermost first:
   every platform, `vcan` or not.
 - `transport.py` — binds `protocol.py` to a real `vcan` interface via
   `can-isotp`/`python-can`. T2/T3-only: needs a real interface.
-- `ecu.py` — `VirtualECU`, the public class combining the two.
+- `ecu.py` — `VirtualECU`, the public class combining the two (CAN).
+- `doip_transport.py` / `doip_ecu.py` (DIAG-03) — the DoIP-over-TCP twin of
+  `transport.py`/`ecu.py`, dispatching to the *same* `ProtocolState` — one
+  set of UDS service logic, two transports.
 """
 
 from __future__ import annotations
 
+from .doip_ecu import DoIPVirtualECU
 from .ecu import VirtualECU
 from .scenario import DTC, DIDConfig, FailureInjection, Scenario, SecurityLevelConfig
 
 __all__ = [
     "DIDConfig",
     "DTC",
+    "DoIPVirtualECU",
     "FailureInjection",
     "Scenario",
     "SecurityLevelConfig",
