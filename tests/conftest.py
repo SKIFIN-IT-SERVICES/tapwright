@@ -114,7 +114,14 @@ def uds_client_for(scenario: Scenario, channel: str, **client_kwargs: Any) -> Ge
     connection = PythonIsoTpConnection(stack)
 
     config = dict(udsoncan.configs.default_client_config)
-    config["data_identifiers"] = dict.fromkeys(scenario.dids, _RawCodec)
+    # 'default' is udsoncan's own wildcard key (see check_did_config /
+    # fetch_codec_definition_from_config in udsoncan/common/dids.py) — needed
+    # so a client can read a DID the *scenario* never configured, e.g.
+    # test_read_unconfigured_did_returns_request_out_of_range: that case is
+    # specifically about the server rejecting an unknown DID, which requires
+    # the request to be sendable at all, not about the client already
+    # knowing the DID doesn't exist.
+    config["data_identifiers"] = {**dict.fromkeys(scenario.dids, _RawCodec), "default": _RawCodec}
     config.update(client_kwargs.pop("config_overrides", {}))
 
     try:
