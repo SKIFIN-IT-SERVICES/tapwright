@@ -8,6 +8,16 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **ISO-TP transport over `hal.Bus`** (DIAG-01, `TOOL-REQ-022` transport
+  half; #11): `tapwright.diag.isotp_transport.IsoTpTransport` wraps
+  `can-isotp`'s `isotp.TransportLayer`, bridged to `tapwright.hal.Bus` via
+  `rxfn`/`txfn` adapters rather than opening its own `python-can` bus — L2
+  built on L0, per `docs/architecture.md`'s layering. Multi-frame
+  segmentation/reassembly verified byte-identical to a stock
+  `isotp.CanStack` peer, both directions, up to ~4000-byte payloads;
+  out-of-sequence Consecutive Frames surface as `TransportProtocolError`
+  rather than a silently wrong reassembly. `tapwright.diag.errors` adds the
+  `DiagError` hierarchy, mirroring `hal.errors`' convention.
 - **HAL: `Bus` abstraction + SocketCAN/`vcan` backend** (HAL-01/HAL-02,
   `TOOL-REQ-001` partial, `TOOL-REQ-002`, `TOOL-REQ-008`, `TOOL-REQ-009`,
   `TOOL-REQ-010`; #3): `open_bus()` + `Bus` over SocketCAN (real interfaces
