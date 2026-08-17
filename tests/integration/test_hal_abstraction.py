@@ -78,17 +78,27 @@ def test_backend_swap_is_config_only(vcan_channel):
     unmodified across >=3 distinct backends" acceptance criterion is
     explicitly deferred to a follow-up issue (gs_usb + Kvaser backends), per
     issue #3's body — not claimed satisfied by this test alone.
+
+    Uses two bus handles, like every other round-trip case in this file —
+    a single handle sending and receiving on itself will never observe its
+    own frame on SocketCAN unless the bus was opened with
+    receive_own_messages=True, which open_bus() deliberately doesn't default
+    to (that's a loopback-testing convenience, not part of the abstraction's
+    contract). This is a real fix, caught by this branch's own CI: the
+    original single-handle version failed with `assert None is not None`.
     """
     from tapwright.hal import Frame, open_bus
 
     def roundtrip(config):
-        bus = open_bus(**config)
+        sender = open_bus(**config)
+        receiver = open_bus(**config)
         try:
             sent = Frame(arbitration_id=0x1, data=b"\xaa")
-            bus.send(sent)
-            return bus.recv(timeout=1.0)
+            sender.send(sent)
+            return receiver.recv(timeout=1.0)
         finally:
-            bus.shutdown()
+            sender.shutdown()
+            receiver.shutdown()
 
     result = roundtrip({"backend": "socketcan", "channel": vcan_channel})
     assert result is not None
