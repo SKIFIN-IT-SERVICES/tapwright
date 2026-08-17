@@ -51,14 +51,30 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 | ID | Goal | Type | Tier | It. | Pri | Status |
 |---|---|---|---|---|---|---|
-| HAL-01 | Core `Bus` interface + capability model; config-driven backend selection | D+W | T3 | 6 | Must | 🔴 |
-| HAL-02 | SocketCAN backend incl. `vcan` | W | T3 | 4 | Must | 🔴 |
+| HAL-01 | Core `Bus` interface + capability model; config-driven backend selection | D+W | T3 | 6 | Must | 🔵 |
+| HAL-02 | SocketCAN backend incl. `vcan` | W | T3 | 4 | Must | 🔵 |
 | HAL-03 | `gs_usb` backend (CANable 2.0 class) | W | T3 | 5 | Must | 🔴 |
 | HAL-04 | Kvaser `canlib` backend | W | T3 | 5 | Must | 🔴 |
 | HAL-05 | PEAK PCANBasic backend | W | T3 | 4 | Should | 🔴 |
 | HAL-06 | Vector XL backend | W | T3 | 5 | Should | 🔴 |
 | HAL-07 | Capability detection + graceful degradation | H | T4 | 5 | Must | 🔴 |
 | HAL-08 | LGPL isolation for `python-can` — dependency only, never vendored | X | T1 | 2 | Must | 🔴 |
+
+> **HAL-01/HAL-02** landed together as PR #4 (`src/tapwright/hal/{bus,frame,errors}.py`,
+> authored by @surendersinghIT, opened 2026-07-31 — before the loop
+> substrate existed). Rebased onto the current substrate's test-tier
+> convention and CI: 2 conflicts resolved (`ci.yml`, `pyproject.toml`,
+> `CHANGELOG.md`), tests moved from its own `tests/hal/` into
+> `tests/{unit,integration}/` with the shared `vcan_channel`/`requires_vcan`/
+> `requires_hardware` fixtures, SPDX headers added. CI caught one real bug in
+> the process — `test_backend_swap_is_config_only` sent and received on a
+> single bus handle, which SocketCAN never echoes back without
+> `receive_own_messages=True` — fixed to use a sender/receiver pair like
+> every other round-trip case. **All 9 CI jobs green, PR clean/mergeable.**
+> `Bus`/`Frame`/`HalError` cover SocketCAN + `vcan` only — `gs_usb` (HAL-03),
+> Kvaser (HAL-04), and the remaining backends are separate, not-yet-started
+> loops, same as HAL-08 (LGPL isolation, not yet enforced for `hal/`
+> specifically — INF-03's licence gate already covers `python-can` generally).
 
 > **HAL-03/04/05/06 each need a physical-hardware sign-off no agent can
 > perform.** The loop closes at T3-on-`vcan`; a named human runs the same suite

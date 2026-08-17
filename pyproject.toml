@@ -39,15 +39,17 @@ classifiers = [
     "Topic :: System :: Networking",
 ]
 
-# First three real dependencies (INF-05, TOOL-REQ-026): the virtual ECU ships
-# as part of the installed package (tapwright.diag.virtual_ecu), not repo-only
-# tooling, per TOOL-REQ-026's "pip install-only user" acceptance criterion —
-# so it needs these at runtime, not just in dev/test. Each has a verified
-# entry in licences.toml; python-can is LGPL-3.0 and used as a
-# dependency-only, never vendored (C-9, FW-REQ-019, HAL-08). Remaining layers
-# (cantools, doipclient, asammdf) get added as HAL/BUS/DIAG loops need them.
+# First three real dependencies (INF-05, TOOL-REQ-026; HAL-01/02): the
+# virtual ECU and the HAL SocketCAN backend both ship as part of the
+# installed package, not repo-only tooling — TOOL-REQ-026's "pip
+# install-only user" acceptance criterion requires it. Each has a verified
+# entry in licences.toml; python-can is LGPL-3.0 (NOT BSD-2-Clause — an
+# earlier estimate was wrong, see docs/framework-requirements.md's
+# correction note) and used as a dependency-only, never vendored (C-9,
+# FW-REQ-019, HAL-08). Remaining layers (cantools, doipclient, asammdf) get
+# added as BUS/DIAG loops need them.
 dependencies = [
-    "python-can>=4",
+    "python-can>=4.3",
     "can-isotp>=2",
     "udsoncan>=1.26",
 ]

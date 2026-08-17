@@ -8,6 +8,13 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **HAL: `Bus` abstraction + SocketCAN/`vcan` backend** (HAL-01/HAL-02,
+  `TOOL-REQ-001` partial, `TOOL-REQ-002`, `TOOL-REQ-008`, `TOOL-REQ-009`,
+  `TOOL-REQ-010`; #3): `open_bus()` + `Bus` over SocketCAN (real interfaces
+  and `vcan`), `Frame`, and a typed `HalError` hierarchy so invalid config
+  and lifecycle misuse raise clear errors rather than bare exceptions from
+  inside `python-can`. CAN-FD capability is checked explicitly — an FD send
+  on a classic-CAN-only bus raises rather than failing silently.
 - **Virtual UDS ECU responder** (INF-05, `TOOL-REQ-026`):
   `tapwright.diag.virtual_ecu` — a scenario-configurable UDS-over-ISO-TP
   responder on `vcan`, ships as part of the installed package so a
@@ -64,8 +71,5 @@ All notable changes to this project are documented here. Format follows
   `ARCHITECTURE.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
   `SECURITY.md`.
 - Packaging skeleton (`pyproject.toml`, `src/` layout) and CI workflow.
-- Module skeleton for `hal/`, `buses/`, `dbc_arxml/`, `diag/`, `runner/`,
+- Module skeleton for `buses/`, `dbc_arxml/`, `diag/`, `runner/`,
   `report/`, `trace/` — no functional code yet.
-
-Nothing has shipped yet. This file starts recording real changes once
-Milestone M1 lands actual functionality — see [ROADMAP.md](ROADMAP.md).
