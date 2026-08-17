@@ -116,11 +116,18 @@ class IsoTpTransport:
         )
 
     def _txfn(self, message: isotp.CanMessage) -> None:
+        # isotp.CanMessage's constructor parameter is named extended_id, but
+        # the stored attribute (per its __slots__) is is_extended_id — using
+        # the constructor's name here raised AttributeError on every send,
+        # silently killing can-isotp's internal sending thread with no
+        # traceback visible to a caller. Caught by this branch's own CI: a
+        # stock isotp.CanStack peer never observed anything sent through
+        # IsoTpTransport.send().
         self._bus.send(
             Frame(
                 arbitration_id=message.arbitration_id,
                 data=bytes(message.data),
-                is_extended_id=message.extended_id,
+                is_extended_id=message.is_extended_id,
                 is_fd=message.is_fd,
             )
         )
