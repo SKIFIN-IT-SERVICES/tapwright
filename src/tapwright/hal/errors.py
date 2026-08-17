@@ -1,9 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Errors raised at the L0 hardware-abstraction boundary.
 
 Every failure the hal/ public API raises is a HalError subclass — a caller
 never has to catch a backend-internal exception type to handle a HAL
 failure, per TOOL-REQ-009's "clear error, not a silent failure or crash."
 """
+
+from __future__ import annotations
 
 
 class HalError(Exception):

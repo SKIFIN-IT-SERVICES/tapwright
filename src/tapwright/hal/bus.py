@@ -1,9 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """The SocketCAN backend (TOOL-REQ-002), including Linux's vcan virtual
 interface (TOOL-REQ-008), behind the L0 abstraction (TOOL-REQ-001).
 
 Nothing above this module should ever branch on backend — swapping backend
 is a config change to open_bus(), not an app-code change.
 """
+
+from __future__ import annotations
 
 import can
 

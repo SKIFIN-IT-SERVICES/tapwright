@@ -1,5 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """The backend-agnostic CAN/CAN-FD frame type nothing above hal/ should ever
 need a backend-specific equivalent of."""
+
+from __future__ import annotations
 
 from dataclasses import dataclass
 

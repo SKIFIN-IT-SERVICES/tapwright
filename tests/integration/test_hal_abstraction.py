@@ -1,4 +1,6 @@
-"""Test plan (happy path) for issue #3 — L0 HAL abstraction skeleton +
+# SPDX-License-Identifier: Apache-2.0
+
+"""T2: happy-path test plan for issue #3 — L0 HAL abstraction skeleton +
 SocketCAN backend + vcan + basic CAN/CAN-FD frame send/receive.
 
 https://github.com/SKIFIN-IT-SERVICES/tapwright/issues/3
@@ -6,6 +8,12 @@ Implements: TOOL-REQ-001 (partial), TOOL-REQ-002, TOOL-REQ-008, TOOL-REQ-009,
 TOOL-REQ-010.
 See docs/tooling-requirements.md for each ID's full acceptance criteria.
 """
+
+from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.requires_vcan
 
 
 def test_open_bus_returns_hal_bus_for_socketcan_backend(vcan_channel):

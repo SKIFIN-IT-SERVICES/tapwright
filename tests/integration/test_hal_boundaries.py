@@ -1,10 +1,18 @@
-"""Test plan (edge cases) for issue #3 — boundary conditions implied by
+# SPDX-License-Identifier: Apache-2.0
+
+"""T2: edge-case test plan for issue #3 — boundary conditions implied by
 TOOL-REQ-008/010 but not spelled out literally in their acceptance criteria.
 
 https://github.com/SKIFIN-IT-SERVICES/tapwright/issues/3
 """
 
+from __future__ import annotations
+
 import time
+
+import pytest
+
+pytestmark = pytest.mark.requires_vcan
 
 
 def test_recv_times_out_cleanly_with_no_traffic(vcan_channel):

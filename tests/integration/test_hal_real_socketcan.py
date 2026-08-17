@@ -1,16 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """TOOL-REQ-002's real-Linux-interface acceptance criterion.
 
 https://github.com/SKIFIN-IT-SERVICES/tapwright/issues/3
 
 Requires an actual SocketCAN-visible interface (e.g. a physical adapter
 brought up as can0) — never available on this (macOS) dev host, and not
-assumed present on a generic CI runner either. Opt-in only, via
-TAPWRIGHT_TEST_REAL_CAN_IFACE, per CONTRIBUTING.md's skip-cleanly contract.
+assumed present on a generic CI runner either. Opt-in via
+TAPWRIGHT_TEST_REAL_CAN_IFACE (the interface name) *and* the project-wide
+`requires_hardware` marker (see tests/conftest.py) so it shows up under the
+same TAPWRIGHT_HARDWARE=1 gate as every other real-hardware case, per
+CONTRIBUTING.md's skip-cleanly contract.
 """
+
+from __future__ import annotations
 
 import os
 
 import pytest
+
+pytestmark = pytest.mark.requires_hardware
 
 
 def test_frame_visible_through_abstraction_on_real_socketcan_interface():
