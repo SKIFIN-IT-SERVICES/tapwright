@@ -22,7 +22,7 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 | Milestone | Loops | Closed | Status |
 |---|---|---|---|
-| M1 — Substrate (W0–3) | 9 | 0 | 🟡 in progress |
+| M1 — Substrate (W0–3) | 9 | 4 | 🟡 in progress — substrate merged to `main` and CI-green (#6/#7/#8); INF-05 next |
 | M2 — Core diagnostics (W3–8) | 9 | 0 | 🔴 |
 | M3 — Trace & reporting (W8–12) | 6 | 0 | 🔴 |
 | M4 — The CI story (W12–16) | 6 | 0 | 🔴 |
@@ -35,12 +35,12 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 | ID | Goal | Type | Tier | It. | Status | Notes |
 |---|---|---|---|---|---|---|
-| INF-01 | Repo skeleton: `pyproject`, Apache-2.0, SPDX headers, `CONTRIBUTING`, CoC, DCO | X | T0 | 2 | ✅ | SPDX headers now on every file and enforced by `tools/check_spdx.py` |
-| INF-02 | CI: T0–T4 jobs incl. `vcan` bring-up + coverage ratchet + guardrails | X | T2 | 4 | 🔵 | `TODO(M1)` resolved: tier jobs split, `vcan` brought up, ratchet + guardrails jobs added. **Not verified on a real runner yet** — the `vcan` bring-up is the part that can only be proven in CI |
-| INF-03 | Automated licence gate + sync corrected licence table into `docs/` | X | T1 | 3 | 🔵 | `licences.toml` + gate; `docs/framework-requirements.md` corrected and FW-REQ-019 added |
-| INF-04 | Fixture corpus scaffolding + provenance manifest format | X | T1 | 3 | 🔵 | Format, validator, and hash-based tamper detection in place. Corpus itself is empty until BUS-01/INF-05 need fixtures |
-| INF-05 | **Virtual UDS/DoIP ECU** on `vcan`, scenario-configurable, failure injection | P | T3 | 8 | 🔴 | **Highest leverage in the plan — start next.** Reuse evaluation done: [`docs/inf-05-simulator-reuse-evaluation.md`](docs/inf-05-simulator-reuse-evaluation.md). `lbenthins/ecu-simulator` is archived and has no failure injection → build, reusing `can-isotp` for transport |
-| INF-06 | `AGENTS.md` + CODEOWNERS + blast-radius config | D | T0 | 1 | 🔵 | Drafted. **This is a D loop — it closes on human review, not on CI.** CODEOWNERS references `@SKIFIN-IT-SERVICES/maintainers`, which must exist as a GitHub team |
+| INF-01 | Repo skeleton: `pyproject`, Apache-2.0, SPDX headers, `CONTRIBUTING`, CoC, DCO | X | T0 | 2 | ✅ | SPDX headers on every file, enforced by `tools/check_spdx.py`. Merged (#6) |
+| INF-02 | CI: T0–T4 jobs incl. `vcan` bring-up + coverage ratchet + guardrails | X | T2 | 4 | ✅ | `TODO(M1)` resolved. **Verified green on a real GitHub-hosted runner** (`main`@`ec3f649`, run 31803589165) after two follow-up fixes: the `vcan` kernel module needed an explicit `linux-modules-extra` install (#7), and a leftover non-fixture `vcan_channel()` call in a test (#8) |
+| INF-03 | Automated licence gate + sync corrected licence table into `docs/` | X | T1 | 3 | ✅ | `licences.toml` + gate; `docs/framework-requirements.md` corrected and FW-REQ-019 added. Merged (#6) |
+| INF-04 | Fixture corpus scaffolding + provenance manifest format | X | T1 | 3 | ✅ | Format, validator, and hash-based tamper detection in place and merged (#6). Corpus itself is empty until BUS-01/INF-05 need fixtures — that's by design, not a gap |
+| INF-05 | **Virtual UDS/DoIP ECU** on `vcan`, scenario-configurable, failure injection | P | T3 | 8 | 🔵 | **Highest leverage in the plan.** Implemented at `src/tapwright/diag/virtual_ecu/` (moved from the test-plan's original `tools/virtual_ecu/` location — `TOOL-REQ-026` requires it importable from the installed package). UDS-**over-CAN only** (`0x10`/`0x22`/`0x2E`/`0x19`/`0x27`-mechanics); DoIP not yet built. All 4 failure-injection kinds implemented and CI-verified. **All 9 CI jobs green on PR #10, including T2 (vcan) and T3 (all 19 differential cases vs. a stock `udsoncan` client)** — the full oracle passed. 41 T1 unit tests + 24 T2/T3 vcan-gated tests, all real. Open item: PR #10 review/merge |
+| INF-06 | `AGENTS.md` + CODEOWNERS + blast-radius config | D | T0 | 1 | 🔵 | Drafted and merged (#6). **This is a D loop — it closes on human review, not on CI**, so still formally open. `CODEOWNERS` references `@SKIFIN-IT-SERVICES/maintainers`, unverified as an actual GitHub team |
 | INF-07 | Loop telemetry: iterations-to-green, human-touch, escapes | X | T1 | 3 | 🔴 | Should. This file auto-updates from CI metadata |
 | INF-08 | Docs site + executable examples (doctest in CI) | X | T1 | 4 | 🔴 | Seed from `knowledge-base/05-training-labs/` |
 

@@ -8,6 +8,18 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Virtual UDS ECU responder** (INF-05, `TOOL-REQ-026`):
+  `tapwright.diag.virtual_ecu` — a scenario-configurable UDS-over-ISO-TP
+  responder on `vcan`, ships as part of the installed package so a
+  `pip install`-only user can run a read-DID round trip with zero hardware.
+  Session control (`0x10`), RDBI/WDBI (`0x22`/`0x2E`), ReadDTCInformation
+  (`0x19`), and SecurityAccess mechanics (`0x27` — request-seed/send-key
+  only, never derivation, per C-10). Failure injection (NRC override,
+  timeout, truncated frame, oversized response) built in from the start,
+  which is the reason it exists rather than wrapping the archived
+  `lbenthins/ecu-simulator` (see
+  `docs/inf-05-simulator-reuse-evaluation.md`). `python-can`, `can-isotp`,
+  and `udsoncan` become the project's first real runtime dependencies.
 - **Agent contract and loop backlog** (INF-06): `AGENTS.md` states the
   invariants that hold in every step of the development loop — the reuse rule,
   the oracle rule, the forbidden list, and the escalation protocol. `CODEOWNERS`
