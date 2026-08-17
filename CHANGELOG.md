@@ -8,6 +8,18 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **UDS client core via `udsoncan`** (DIAG-02, `TOOL-REQ-022` client half /
+  `TOOL-REQ-024`; #13): `tapwright.diag.connection.TapwrightIsoTpConnection`
+  — a `udsoncan.connections.BaseConnection` adapter over DIAG-01's
+  `IsoTpTransport` — and `tapwright.diag.uds_client.open_uds_client()`, the
+  transport-agnostic construction point `docs/architecture.md` §4 requires:
+  it returns a plain `udsoncan.Client`, so every service the library already
+  implements (RDBI, WDBI, DTC read, RoutineControl, SecurityAccess, session
+  control, ...) works through our transport with no service-level code of
+  our own, per `AGENTS.md`'s reuse rule. Verified byte-identical to
+  udsoncan's own reference connection stack across happy-path, multi-frame,
+  and error cases, plus a `hypothesis`-driven property test across
+  arbitrary DID value lengths.
 - **ISO-TP transport over `hal.Bus`** (DIAG-01, `TOOL-REQ-022` transport
   half; #11): `tapwright.diag.isotp_transport.IsoTpTransport` wraps
   `can-isotp`'s `isotp.TransportLayer`, bridged to `tapwright.hal.Bus` via

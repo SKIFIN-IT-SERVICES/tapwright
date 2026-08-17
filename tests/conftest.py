@@ -131,6 +131,25 @@ def uds_client_for(scenario: Scenario, channel: str, **client_kwargs: Any) -> Ge
         bus.shutdown()
 
 
+@pytest.fixture(scope="session")
+def raw_did_codec() -> type[udsoncan.DidCodec]:
+    """Fixture form of `_RawCodec`, for callers building their own
+    `data_identifiers` config outside `uds_client_for` — e.g. DIAG-02's
+    `open_uds_client()`-produced client, which needs the same codec but
+    isn't built by this file's own helper.
+
+    Session-scoped (it's a stateless class, safe to share) specifically so
+    module/session-scoped fixtures elsewhere can depend on it — pytest
+    forbids a broader-scoped fixture depending on a narrower one, and
+    `tests/property/test_uds_client_properties.py` needs a module-scoped
+    client fixture (hypothesis rejects function-scoped fixtures under
+    `@given`: the fixture would be torn down and rebuilt per generated
+    example, which `FailedHealthCheck` flags as almost certainly not what
+    was intended).
+    """
+    return _RawCodec
+
+
 @pytest.fixture
 def uds_client_factory() -> Any:
     """Fixture form of `uds_client_for`, injected without any cross-file
