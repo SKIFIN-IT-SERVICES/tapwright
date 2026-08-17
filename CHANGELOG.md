@@ -8,6 +8,16 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **DoIP transport** (DIAG-03, `TOOL-REQ-023`; #15): `open_doip_uds_client()`
+  — the DoIP-transport twin of DIAG-02's `open_uds_client()`, returning the
+  same `udsoncan.Client` type. Writes no connection adapter of its own:
+  `doipclient` ships an official `udsoncan.connections.BaseConnection`
+  implementation, reused directly. The new work is the virtual ECU's DoIP
+  responder (`tapwright.diag.virtual_ecu.DoIPVirtualECU`), which dispatches
+  to the *same* `ProtocolState` the CAN-side responder uses — one set of
+  UDS service logic, two transports. `doipclient` becomes a runtime
+  dependency. First `diag/` loop verified with genuine local red/green
+  TDD since INF-05 (DoIP is plain TCP, no `vcan` needed).
 - **UDS client core via `udsoncan`** (DIAG-02, `TOOL-REQ-022` client half /
   `TOOL-REQ-024`; #13): `tapwright.diag.connection.TapwrightIsoTpConnection`
   — a `udsoncan.connections.BaseConnection` adapter over DIAG-01's

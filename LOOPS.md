@@ -108,7 +108,7 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 |---|---|---|---|---|---|---|
 | DIAG-01 | ISO-TP transport via `can-isotp` (MIT — verified) | W | T3 | 5 | Must | 🔵 |
 | DIAG-02 | UDS client core via `udsoncan` | W | T4 | 8 | Must | 🔵 |
-| DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔴 |
+| DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔵 |
 | DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔴 |
 | DIAG-05 | Interception/observer hooks — must work across a process boundary | D+I | T2 | 5 | Must | 🔴 |
 | DIAG-06 | ODX/PDX read-only import → DID/routine name resolution | W | T3 | 8 | Should | 🔴 |
@@ -140,6 +140,18 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 > client per generated example. Narrower than full `TOOL-REQ-024`:
 > RoutineControl/ClearDTC aren't ECU-implemented yet (#9's own deferral) —
 > proven instead via a clean `serviceNotSupported` response, not a hang.
+
+> **DIAG-03** (PR #16): `open_doip_uds_client()` writes **no connection
+> adapter** — `doipclient` ships its own official one, reused directly. New
+> code is the virtual ECU's DoIP responder (`DoIPVirtualECU`), dispatching
+> to the same `ProtocolState` the CAN path uses. All 9 T3 cases pass — and,
+> unusually, **verified genuinely locally** before CI even ran (DoIP is
+> plain TCP, no `vcan` needed), first `diag/` loop with that property since
+> INF-05. **Not done: entity discovery** (UDP vehicle-announcement
+> broadcast, ISO 13400 §7.3) — the plan's own goal line names it, this loop
+> only built routing activation + diagnostic message exchange. No TLS, no
+> alive-check timer either. None block DIAG-04; flagged as future work if a
+> loop actually needs them.
 
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
