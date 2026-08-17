@@ -39,12 +39,18 @@ classifiers = [
     "Topic :: System :: Networking",
 ]
 
-# Intentionally empty for now — this is scaffolding, not L0-L3 functionality
-# yet. Real dependencies (python-can, cantools, python-can-isotp, udsoncan,
-# doipclient, asammdf, pytest) get added as each layer is implemented, per
-# ARCHITECTURE.md, with license compatibility (Apache-2.0/MIT/BSD only)
-# verified before each addition.
-dependencies = []
+# First three real dependencies (INF-05, TOOL-REQ-026): the virtual ECU ships
+# as part of the installed package (tapwright.diag.virtual_ecu), not repo-only
+# tooling, per TOOL-REQ-026's "pip install-only user" acceptance criterion —
+# so it needs these at runtime, not just in dev/test. Each has a verified
+# entry in licences.toml; python-can is LGPL-3.0 and used as a
+# dependency-only, never vendored (C-9, FW-REQ-019, HAL-08). Remaining layers
+# (cantools, doipclient, asammdf) get added as HAL/BUS/DIAG loops need them.
+dependencies = [
+    "python-can>=4",
+    "can-isotp>=2",
+    "udsoncan>=1.26",
+]
 
 [project.optional-dependencies]
 dev = [
