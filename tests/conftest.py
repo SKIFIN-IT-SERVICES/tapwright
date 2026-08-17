@@ -132,6 +132,16 @@ def uds_client_for(scenario: Scenario, channel: str, **client_kwargs: Any) -> Ge
 
 
 @pytest.fixture
+def raw_did_codec() -> type[udsoncan.DidCodec]:
+    """Fixture form of `_RawCodec`, for callers building their own
+    `data_identifiers` config outside `uds_client_for` — e.g. DIAG-02's
+    `open_uds_client()`-produced client, which needs the same codec but
+    isn't built by this file's own helper.
+    """
+    return _RawCodec
+
+
+@pytest.fixture
 def uds_client_factory() -> Any:
     """Fixture form of `uds_client_for`, injected without any cross-file
     import — `tests/` isn't a package, so test files reach this helper as a
