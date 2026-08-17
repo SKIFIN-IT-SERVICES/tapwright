@@ -37,7 +37,7 @@ pytestmark = pytest.mark.requires_vcan
 TEST_DID = 0x1234
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def client(vcan_channel, raw_did_codec) -> Iterator[Client]:
     scenario = Scenario(dids={TEST_DID: DIDConfig(value=b"\x00")})
     bus = open_bus(backend="socketcan", channel=vcan_channel)

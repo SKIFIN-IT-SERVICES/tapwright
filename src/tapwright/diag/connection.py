@@ -55,5 +55,15 @@ class TapwrightIsoTpConnection(BaseConnection):
         return self._transport.recv(timeout=timeout)
 
     def empty_rxqueue(self) -> None:
+        # udsoncan.Client.send_request() calls this directly, before its own
+        # check_connection_opened() guard ever runs (that guard only wraps
+        # send()/wait_frame(), not empty_rxqueue()) — so a closed connection
+        # must handle this gracefully rather than raising TransportClosedError
+        # from the underlying transport. Draining "nothing" on a closed
+        # connection is a no-op, not an error; the *next* call (send()) is
+        # what correctly raises RuntimeError via check_connection_opened(),
+        # per test_connection_closed_raises_clear_error_on_further_use.
+        if not self._is_open:
+            return
         while self._transport.recv(timeout=0) is not None:
             pass
