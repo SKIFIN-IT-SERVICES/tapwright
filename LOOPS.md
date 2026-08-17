@@ -107,7 +107,7 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 | ID | Goal | Type | Tier | It. | Pri | Status |
 |---|---|---|---|---|---|---|
 | DIAG-01 | ISO-TP transport via `can-isotp` (MIT — verified) | W | T3 | 5 | Must | 🔵 |
-| DIAG-02 | UDS client core via `udsoncan` | W | T4 | 8 | Must | 🔴 |
+| DIAG-02 | UDS client core via `udsoncan` | W | T4 | 8 | Must | 🔵 |
 | DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔴 |
 | DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔴 |
 | DIAG-05 | Interception/observer hooks — must work across a process boundary | D+I | T2 | 5 | Must | 🔴 |
@@ -128,6 +128,18 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 > `tools/virtual_ecu` (INF-05) still opens its own `python-can` bus directly
 > rather than building on `hal.Bus` — it predates HAL-01/02 and hasn't been
 > revisited.
+
+> **DIAG-02** (PR #14): `open_uds_client()` returns a plain `udsoncan.Client`
+> — the only new code is `TapwrightIsoTpConnection`, the `BaseConnection`
+> adapter over DIAG-01's transport. All 12 T3+T4 cases green, differentially
+> matched against udsoncan's own reference connection stack. CI caught two
+> real bugs: `empty_rxqueue()` wasn't defensive against an already-closed
+> transport (udsoncan calls it before its own open-check runs), and the T4
+> property test's client fixture was function-scoped, which `hypothesis`
+> rejects outright (`FailedHealthCheck`) since it would rebuild the ECU+
+> client per generated example. Narrower than full `TOOL-REQ-024`:
+> RoutineControl/ClearDTC aren't ECU-implemented yet (#9's own deferral) —
+> proven instead via a clean `serviceNotSupported` response, not a hang.
 
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
