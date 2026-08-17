@@ -11,5 +11,11 @@ projects like Gallia) to wrap it later without forking it. See
 ARCHITECTURE.md at the repository root before changing this module's
 public surface.
 
-Not yet implemented — this is scaffolding for Milestones M1-M2.
+Implemented so far: `virtual_ecu` (INF-05, the zero-hardware UDS responder)
+and `isotp_transport` (DIAG-01, ISO-TP over `hal.Bus`). Both are accessed
+directly (`tapwright.diag.virtual_ecu`, `tapwright.diag.isotp_transport`)
+rather than re-exported here, so importing `tapwright.diag` itself stays
+cheap — it doesn't pull in `can`/`isotp`/`udsoncan` unless a submodule that
+actually needs them is imported. The UDS client (DIAG-02) and DoIP
+transport (DIAG-03) are not yet built.
 """

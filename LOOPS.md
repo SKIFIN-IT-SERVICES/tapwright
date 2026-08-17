@@ -106,7 +106,7 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 | ID | Goal | Type | Tier | It. | Pri | Status |
 |---|---|---|---|---|---|---|
-| DIAG-01 | ISO-TP transport via `can-isotp` (MIT — verified) | W | T3 | 5 | Must | 🔴 |
+| DIAG-01 | ISO-TP transport via `can-isotp` (MIT — verified) | W | T3 | 5 | Must | 🔵 |
 | DIAG-02 | UDS client core via `udsoncan` | W | T4 | 8 | Must | 🔴 |
 | DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔴 |
 | DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔴 |
@@ -115,6 +115,19 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 | DIAG-07 | SOVD client (REST/JSON, ISO 17978) | P | T3 | 8 | Should | 🔴 |
 | DIAG-08 | C-10 guardrail: `0x27` mechanics only; CI scan blocks key derivation | H | T1 | 3 | Must | 🔵 landed early with the substrate (`tools/check_forbidden.py`); the deliberate red-team commit that proves CI rejects it is still owed |
 | DIAG-09 | Malformed-response hardening: NRCs, timeouts, truncated frames | H | T4 | 7 | Must | 🔴 |
+
+> **DIAG-01** (PR #12): `IsoTpTransport` built on `hal.Bus` via `rxfn`/`txfn`
+> adapters, not a raw `python-can` bus — deliberately, so L2 sits on L0
+> (`docs/architecture.md`). All 12 T3 cases green against a stock
+> `isotp.CanStack` peer, both directions, up to ~4000-byte payloads. CI
+> caught a real bug: `_txfn` read `message.extended_id`, but
+> `isotp.CanMessage`'s stored attribute is `is_extended_id` — every send
+> raised `AttributeError` inside `can-isotp`'s own thread, silently killing
+> it with zero visible failure until CI's differential oracle caught it (8 of
+> 12 cases failed until fixed). **Known inconsistency, not yet resolved**:
+> `tools/virtual_ecu` (INF-05) still opens its own `python-can` bus directly
+> rather than building on `hal.Bus` — it predates HAL-01/02 and hasn't been
+> revisited.
 
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
