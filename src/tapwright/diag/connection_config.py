@@ -4,7 +4,7 @@
 requires (DIAG-04): a single `open_connection()`, dispatching on a config
 object's *type* rather than a string a caller could typo.
 
-    from tapwright.diag import CanConnectionConfig, open_connection
+    from tapwright.diag.connection_config import CanConnectionConfig, open_connection
     from tapwright.hal import open_bus
 
     bus = open_bus(backend="socketcan", channel="vcan0")

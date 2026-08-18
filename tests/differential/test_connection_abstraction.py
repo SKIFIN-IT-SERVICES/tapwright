@@ -91,16 +91,16 @@ def connection_config(request, vcan_channel, raw_did_codec):
 
         if transport == "can":
             bus = open_bus(backend="socketcan", channel=vcan_channel)
-            transport_config = CanConnectionConfig(
-                bus=bus, rxid=scenario.response_id, txid=scenario.request_id
-            )
-            with VirtualECU(scenario, channel=vcan_channel):
-                client = open_connection(transport_config, config=client_config)
-                try:
+            try:
+                transport_config = CanConnectionConfig(
+                    bus=bus, rxid=scenario.response_id, txid=scenario.request_id
+                )
+                with VirtualECU(scenario, channel=vcan_channel):
+                    client = open_connection(transport_config, config=client_config)
                     with client:
                         yield client
-                finally:
-                    bus.shutdown()
+            finally:
+                bus.shutdown()
         else:
             with DoIPVirtualECU(
                 scenario, host=DOIP_ECU_HOST, ecu_logical_address=DOIP_ECU_LOGICAL_ADDRESS

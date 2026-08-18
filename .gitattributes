@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Fixtures are oracles, checked byte-for-byte via tools/check_fixtures.py's
+# SHA-256 comparison (INF-04, AGENTS.md §3). Without this file, a
+# contributor with core.autocrlf=true (the common Windows default) gets
+# their checkout of every fixture silently rewritten from the repo's LF to
+# CRLF — invisible to `git status`/`git diff`, which normalize it back, but
+# not to a byte-level hash. The result looks exactly like local fixture
+# tampering (CONTENT CHANGED, wrong hash) without any of it being real,
+# and undermines confidence in the guardrail that's supposed to catch the
+# genuine version of that failure mode.
+#
+# `-text` disables any newline conversion for these paths, on every
+# platform and regardless of a contributor's own autocrlf setting, so the
+# working tree always matches the committed blob exactly.
+fixtures/** -text
