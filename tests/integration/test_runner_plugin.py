@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""Test plan for RUN-01 / TOOL-REQ-028 — the pytest-native plugin's `ecu`,
+"""Tests for RUN-01 / TOOL-REQ-028 — the pytest-native plugin's `ecu`,
 `bus`, `uds` fixtures.
 
 Implements #20. The oracle (plan §2.1) is literal: "a user test using only
@@ -15,6 +15,11 @@ are used below with no `pytest_plugins = [...]` anywhere in this repo's
 correctly, every test in this file fails to collect at all (unknown fixture
 `uds`/`bus`/`ecu`) rather than failing an assertion — collection succeeding
 *is* part of what each case proves.
+
+Module-level tests use the plugin's own default (empty) `scenario` — proving
+"zero configuration" works, not just "zero boilerplate given some config".
+`TestWithConfiguredScenario` overrides `scenario` at class scope (standard
+pytest fixture-override) to exercise the configured-DID paths.
 
 ## Scope notes (posted in full to #20; kept here as a pointer)
 
@@ -33,85 +38,71 @@ correctly, every test in this file fails to collect at all (unknown fixture
 from __future__ import annotations
 
 import pytest
+from udsoncan.exceptions import NegativeResponseException
 
 from tapwright.diag.virtual_ecu import DIDConfig, Scenario
 
 pytestmark = pytest.mark.requires_vcan
 
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #20)")
-
-
-@pytest.fixture
-def scenario() -> Scenario:
-    """Overrides the plugin's own default (empty) `scenario` fixture —
-    standard pytest fixture-override, no plugin-specific mechanism needed.
-    This is the *only* tapwright-aware code most of this file's tests
-    contain; everything else is plain pytest + plain UDS calls.
-    """
-    return Scenario(dids={0xF190: DIDConfig(value=b"VIN1234567890123")})
-
 
 # ---------------------------------------------------------------------------
-# Happy path — the oracle itself
+# Default scenario (no override) — "zero configuration" is a valid starting
+# point, not just a supported one.
 # ---------------------------------------------------------------------------
 
 
-@SKIP
-def test_uds_fixture_reads_configured_did(uds):
-    """def test_x(uds): ... — TOOL-REQ-028's acceptance criterion, verbatim.
-    No Bus, no VirtualECU, no connection wiring anywhere in this function.
-    """
-
-
-@SKIP
 def test_ecu_fixture_is_usable_directly(ecu):
     """A user who wants lower-level access than `uds` gives (e.g. to expect
     a specific failure injection) can still reach the running ECU object
     directly."""
+    assert ecu.scenario is not None
 
 
-@SKIP
 def test_bus_fixture_is_usable_directly(bus):
     """A user who wants raw frame access below UDS can still reach a
-    working, already-open Bus directly."""
-
-
-# ---------------------------------------------------------------------------
-# Edge cases
-# ---------------------------------------------------------------------------
-
-
-@SKIP
-def test_uds_fixture_constructs_with_default_scenario(vcan_channel):
-    """A test file that does *not* override `scenario` still gets a working
-    `uds` fixture (against the plugin's own empty-Scenario default) rather
-    than a construction failure — "zero boilerplate" includes "zero
-    configuration" as a valid starting point, not just a supported one.
-
-    Deliberately does not depend on the `uds` fixture directly as a
-    parameter, since this file's own `scenario` override (above) would
-    shadow the plugin's default and defeat the point — exercised via a
-    dedicated non-overriding scenario in the real test body instead.
+    working, already-open Bus directly — a plain send doesn't raise, proving
+    it's a real, open socket rather than an inert placeholder object.
     """
+    from tapwright.hal import Frame
+
+    bus.send(Frame(arbitration_id=0x1, data=b"\xaa"))
 
 
-# ---------------------------------------------------------------------------
-# Error cases
-# ---------------------------------------------------------------------------
+def test_uds_fixture_constructs_with_default_scenario(uds):
+    """`uds` constructs cleanly against the plugin's own empty `Scenario()`
+    — no configuration needed just to get a working connection.
+    """
+    assert uds is not None
 
 
-@SKIP
 def test_uds_read_unconfigured_did_raises_clear_error(uds):
     """Reading a DID the scenario never configured raises udsoncan's
     NegativeResponseException — a clear, typed error, not a hang or a bare
     exception from deep inside the stack. Matches every DIAG loop's own
     established contract for this case.
     """
+    with pytest.raises(NegativeResponseException):
+        uds.read_data_by_identifier(0xF190)
 
 
-@SKIP
-def test_bus_channel_is_configurable_not_hardcoded():
-    """The channel `bus`/`ecu` use is a config option (CLI/ini), not a
-    hardcoded "vcan0" literal — matching HAL-01's own "swap is a config
-    change" property, carried up to the fixture layer.
-    """
+# ---------------------------------------------------------------------------
+# Overridden scenario — TOOL-REQ-028's acceptance criterion, verbatim
+# ---------------------------------------------------------------------------
+
+
+class TestWithConfiguredScenario:
+    @pytest.fixture
+    def scenario(self) -> Scenario:
+        """Overrides the plugin's own default (empty) `scenario` fixture —
+        standard pytest fixture-override, scoped to this class only, no
+        plugin-specific mechanism needed.
+        """
+        return Scenario(dids={0xF190: DIDConfig(value=b"VIN1234567890123")})
+
+    def test_uds_fixture_reads_configured_did(self, uds):
+        """def test_x(uds): ... — TOOL-REQ-028's acceptance criterion,
+        verbatim. No Bus, no VirtualECU, no connection wiring anywhere in
+        this function.
+        """
+        response = uds.read_data_by_identifier(0xF190)
+        assert response.service_data.values[0xF190] == b"VIN1234567890123"

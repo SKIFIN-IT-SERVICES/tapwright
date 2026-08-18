@@ -65,6 +65,12 @@ dev = [
     "tomli; python_version<'3.11'",  # tomllib landed in 3.11; the floor is 3.10
 ]
 
+# RUN-01 / TOOL-REQ-028: auto-discovered on `pip install tapwright` — a user
+# needs no `pytest_plugins = [...]` to get the ecu/bus/uds fixtures. This
+# entry point is what makes that "zero custom test-runner boilerplate".
+[project.entry-points.pytest11]
+tapwright = "tapwright.runner.plugin"
+
 [project.urls]
 Homepage = "https://github.com/SKIFIN-IT-SERVICES/tapwright"
 Repository = "https://github.com/SKIFIN-IT-SERVICES/tapwright"
