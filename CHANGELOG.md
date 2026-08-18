@@ -8,7 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
-- **Transport-agnostic connection abstraction** (DIAG-04; #17):
+- **pytest-native plugin: `ecu`/`bus`/`uds` fixtures** (RUN-01,
+  `TOOL-REQ-028`; #20): `tapwright.runner.plugin`, registered as a
+  `pytest11` entry point — auto-discovered on `pip install tapwright`, no
+  `pytest_plugins = [...]` needed. `def test_x(uds): ...` works with zero
+  configuration (an empty default `Scenario`); a user overrides the
+  `scenario` fixture in their own test file to configure DIDs. `uds` is
+  built on DIAG-04's `open_connection()`, inheriting its transport-agnostic
+  properties. CAN/`vcan` only in this pass — DoIP fixtures are a
+  fast-follow. `TOOL-REQ-029` (deterministic `wait_for_*` helpers) is a
+  separate requirement, not built here.
+- **Transport-agnostic connection abstraction** (DIAG-04, #17):
   `tapwright.diag.connection_config.open_connection()` — a single
   construction-time choice (`CanConnectionConfig` vs. `DoipConnectionConfig`,
   dispatched by type) between DIAG-02's and DIAG-03's client factories,
