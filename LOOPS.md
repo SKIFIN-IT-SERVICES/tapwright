@@ -109,7 +109,7 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 | DIAG-01 | ISO-TP transport via `can-isotp` (MIT — verified) | W | T3 | 5 | Must | 🔵 |
 | DIAG-02 | UDS client core via `udsoncan` | W | T4 | 8 | Must | 🔵 |
 | DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔵 |
-| DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔴 |
+| DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔵 |
 | DIAG-05 | Interception/observer hooks — must work across a process boundary | D+I | T2 | 5 | Must | 🔴 |
 | DIAG-06 | ODX/PDX read-only import → DID/routine name resolution | W | T3 | 8 | Should | 🔴 |
 | DIAG-07 | SOVD client (REST/JSON, ISO 17978) | P | T3 | 8 | Should | 🔴 |
@@ -152,6 +152,19 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 > only built routing activation + diagnostic message exchange. No TLS, no
 > alive-check timer either. None block DIAG-04; flagged as future work if a
 > loop actually needs them.
+
+> **DIAG-04** (PR #18): `open_connection()` dispatches on config-object type
+> to DIAG-02/DIAG-03's factories. Oracle was unusual — not a differential
+> comparison but the parametrization itself succeeding — and it did, all 9
+> CI jobs green first try, DoIP-side cases (5/10) also verified for real
+> locally before ever reaching CI. **Corrected mid-implementation**: the
+> issue/test-plan said `open_connection()` would be re-exported at
+> `tapwright.diag` package level; kept as
+> `tapwright.diag.connection_config.open_connection` instead, since
+> re-exporting would've broken the "stay cheap" import convention every
+> prior `diag/` submodule established (see the test file's own docstring
+> for the full reasoning). M2's exit criterion — "same UDS test passes
+> unmodified over CAN and DoIP" — is now met.
 
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
