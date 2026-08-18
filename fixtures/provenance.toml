@@ -13,12 +13,52 @@
 # empty rather than pre-populated with plausible-looking files: a fixture with
 # no test pointing at it is a liability, not an asset.
 
-# [[fixture]]
-# path = "databases/multiplexed.dbc"
-# sha256 = "..."
-# origin = "self-authored"
-# licence = "Apache-2.0"
-# source = "Written for BUS-01; no external source"
-# added = "2026-08-14"
-# verified_by = "handle"
-# description = "Multiplexed signals with a 2-bit multiplexor"
+[[fixture]]
+path = "databases/multiplexed.dbc"
+sha256 = "48bbcf5ac38d832a1b2dc0d33e94c76c3e06101afeca68c5733266fea61cd671"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for BUS-01 (issue #22); no external source"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Three messages exercising DBC decode edge cases: EngineData (standard 11-bit ID, plain scaling, a negative offset), ExtendedMsg (29-bit extended ID), MuxMessage (a multiplexor signal selecting between two differently-scaled multiplexed signals)"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_engine_data.json"
+sha256 = "96064ed42ee494111abb28c8cfaad571c97ae458ad8965f41004edbd31da7155"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc; hand-verified against the DBC's own scale/offset lines"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of EngineData: plain scaling (EngineSpeed) and a negative offset (EngineTemp)"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_extended_msg.json"
+sha256 = "cd9af25d0c064878cbd7ba4e1c8dd213842b9989944ccf52a70a43501fb89be1"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc, force_extended_id=True"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of ExtendedMsg: a 29-bit extended arbitration ID"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_mux_selector_0.json"
+sha256 = "29e8880e8d812ca52a976a0151a68cc23a182cb3f308510699478e02b6964294"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of MuxMessage with MuxSelector=0, selecting MuxedSignalA"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_mux_selector_1.json"
+sha256 = "1e3549533968fdf7a84e5b748d30efb3444cd8eb811f3334dad3f4ae85f6702c"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of MuxMessage with MuxSelector=1, selecting MuxedSignalB — same raw payload as selector_0 except the selector byte, decoding to a different signal entirely"

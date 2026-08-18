@@ -1,0 +1,12 @@
+{
+  "database": "databases/multiplexed.dbc",
+  "message": "MuxMessage",
+  "frame_id": 300,
+  "is_extended_id": false,
+  "data_hex": "00d2040000000000",
+  "decoded": {
+    "MuxSelector": 0,
+    "MuxedSignalA": 1234
+  },
+  "notes": "MuxSelector=0 selects MuxedSignalA (raw=1234, scale 1). MuxedSignalB is absent from the decode because its multiplexed group (m1) doesn't match the selector value — this is cantools' own multiplex behaviour, not something we add. Decoded by cantools 42.0.3 directly."
+}

@@ -36,6 +36,17 @@ import sys
 
 PROTECTED_PREFIXES = ("fixtures/", "tests/differential/expected/")
 
+# provenance.toml is *expected* to be modified on every loop that adds a
+# fixture (that's how a new [[fixture]] entry gets there) — flagging every
+# such edit as "an existing fixture changed" would make the fixture-adding
+# path require a fixture-change: trailer for a purely additive edit, which
+# contradicts this module's own stated intent ("adding a new fixture is
+# normal and needs no trailer"). Its actual integrity guarantee — has an
+# *existing* entry's recorded hash silently changed — is check_fixtures.py's
+# job (content-hash comparison), not blast-radius's file-status check, which
+# only sees "M" either way and can't tell additive from destructive.
+PROVENANCE_MANIFEST_NAME = "provenance.toml"
+
 # Paths every loop may touch regardless of its declared radius: the paperwork
 # that goes with any change.
 ALWAYS_ALLOWED = ("CHANGELOG.md", "LOOPS.md")
@@ -82,6 +93,21 @@ def matches_any(path: str, patterns: list[str]) -> bool:
     )
 
 
+def modified_protected_fixtures(changes: list[tuple[str, str]]) -> list[str]:
+    """Which changed paths are an *existing* fixture/expected-output being
+    modified or removed — the case that needs a fixture-change: trailer.
+    Newly added fixtures (status A) and provenance.toml itself (see
+    PROVENANCE_MANIFEST_NAME's own note) are excluded deliberately.
+    """
+    return [
+        path
+        for status, path in changes
+        if status in {"M", "D", "R"}
+        and path.startswith(PROTECTED_PREFIXES)
+        and path.rsplit("/", 1)[-1] != PROVENANCE_MANIFEST_NAME
+    ]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", default="origin/main", help="base ref to diff against")
@@ -96,11 +122,7 @@ def main() -> int:
         print(f"Could not diff against {args.base}: {exc.stderr.strip()}", file=sys.stderr)
         return 1
 
-    modified_protected = [
-        path
-        for status, path in changes
-        if status in {"M", "D", "R"} and path.startswith(PROTECTED_PREFIXES)
-    ]
+    modified_protected = modified_protected_fixtures(changes)
 
     if modified_protected and TRAILER not in messages.lower():
         errors.append(

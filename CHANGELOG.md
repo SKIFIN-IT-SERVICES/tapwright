@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **DBC ingestion + symbolic decode via `cantools`** (BUS-01, `TOOL-REQ-014`;
+  #22): `tapwright.dbc_arxml.load_dbc()`/`DbcDatabase` wrap `cantools`'s own
+  `Database`, bridging decode/encode to `tapwright.hal.Frame` directly —
+  L1's first code, and the first loop to populate INF-04's fixture corpus
+  for real (`fixtures/databases/multiplexed.dbc`, self-authored, plus four
+  golden expected-output JSON files). `decode_message()` needs
+  `force_extended_id` passed through explicitly for extended-ID
+  messages — found while authoring the fixture, before the implementation
+  existed, and recorded in the fixture's own notes. Also fixes a real gap
+  in `tools/check_blast_radius.py`: adding new `provenance.toml` entries
+  was incorrectly flagged the same as tampering with an existing fixture.
 - **pytest-native plugin: `ecu`/`bus`/`uds` fixtures** (RUN-01,
   `TOOL-REQ-028`; #20): `tapwright.runner.plugin`, registered as a
   `pytest11` entry point — auto-discovered on `pip install tapwright`, no

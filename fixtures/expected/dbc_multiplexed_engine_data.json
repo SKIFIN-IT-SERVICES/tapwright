@@ -1,0 +1,12 @@
+{
+  "database": "databases/multiplexed.dbc",
+  "message": "EngineData",
+  "frame_id": 100,
+  "is_extended_id": false,
+  "data_hex": "a00f640000000000",
+  "decoded": {
+    "EngineSpeed": 1000.0,
+    "EngineTemp": 60
+  },
+  "notes": "EngineSpeed raw=4000 (0x0FA0 little-endian) * scale 0.25 = 1000.0 rpm. EngineTemp raw=100, offset -40 -> 60 degC. Exercises plain scaling and a negative offset. Decoded by cantools 42.0.3 directly; hand-verified against the DBC's own SG_ scale/offset line."
+}
