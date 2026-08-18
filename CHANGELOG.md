@@ -8,6 +8,15 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Transport-agnostic connection abstraction** (DIAG-04; #17):
+  `tapwright.diag.connection_config.open_connection()` — a single
+  construction-time choice (`CanConnectionConfig` vs. `DoipConnectionConfig`,
+  dispatched by type) between DIAG-02's and DIAG-03's client factories,
+  both returning the same `udsoncan.Client` type. Verified with one literal
+  test body run unmodified over both transports — the "invisible to the
+  calling code" property `docs/architecture.md` §4 requires, demonstrated
+  rather than argued. Shaped so a future `SovdConnectionConfig` (DIAG-07)
+  slots into the same dispatch.
 - **DoIP transport** (DIAG-03, `TOOL-REQ-023`; #15): `open_doip_uds_client()`
   — the DoIP-transport twin of DIAG-02's `open_uds_client()`, returning the
   same `udsoncan.Client` type. Writes no connection adapter of its own:
