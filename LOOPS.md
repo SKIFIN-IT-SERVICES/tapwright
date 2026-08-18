@@ -20,23 +20,24 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**11 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
+**12 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02, DIAG-01–04, RUN-01. Roughly 30% of the loop count —
-see each section's table below for per-loop detail; this line replaces the
-former per-milestone rollup table, which drifted out of sync with the
-per-loop tables (a second tracking surface saying something different from
-the first is worse than one surface, even an imperfect one) and didn't map
-cleanly onto the plan's own M1–M6 loop groupings in the first place.
+INF-01–05, HAL-01/02, DIAG-01–04, RUN-01, BUS-01. Roughly 32% of the loop
+count — see each section's table below for per-loop detail; this line
+replaces the former per-milestone rollup table, which drifted out of sync
+with the per-loop tables (a second tracking surface saying something
+different from the first is worse than one surface, even an imperfect one)
+and didn't map cleanly onto the plan's own M1–M6 loop groupings in the
+first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 `vcan`-provable half done; HAL-03–06 are blocked on physical hardware
-sign-off, a named human task, not an agent one. L2 (DIAG) now has a
-complete, transport-agnostic UDS-over-CAN-and-DoIP client — this session's
-biggest jump — with the interception-hook, ODX, SOVD, and hardening loops
-still ahead. L3 (RUN) has its first fixture, with the CLI/report/CI-example
-loops still ahead. **L1 (BUS) — DBC/ARXML decode, trace I/O, restbus — has
-not been started at all.**
+sign-off, a named human task, not an agent one. L2 (DIAG) has a complete,
+transport-agnostic UDS-over-CAN-and-DoIP client, with the interception-hook,
+ODX, SOVD, and hardening loops still ahead. L3 (RUN) has its first fixture,
+with the CLI/report/CI-example loops still ahead. **L1 (BUS) now has its
+first loop** — DBC decode — with ARXML, trace I/O, and restbus still
+ahead of it.
 
 ---
 
@@ -101,7 +102,7 @@ not been started at all.**
 
 | ID | Goal | Type | Tier | It. | Pri | Status |
 |---|---|---|---|---|---|---|
-| BUS-01 | DBC load + decode/encode via `cantools` | W | T4 | 5 | Must | 🔴 |
+| BUS-01 | DBC load + decode/encode via `cantools` | W | T4 | 5 | Must | 🔵 |
 | BUS-02 | ARXML load + decode; dual-specification path (lightweight input first-class) | W | T4 | 7 | Must | 🔴 |
 | BUS-03 | LDF (LIN) database support | W | T3 | 4 | Should | 🔴 |
 | BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | 🔴 |
@@ -110,6 +111,25 @@ not been started at all.**
 | BUS-07 | Restbus / cyclic-send engine, multi-node, DBC-driven cycle times | P | T4 | 8 | Must | 🔴 |
 | BUS-08 | Signal-level subscribe/filter API over live traffic | I | T2 | 5 | Should | 🔴 |
 | BUS-09 | Ethernet restbus basics | P | T2 | 6 | Could | 🔴 |
+
+> **BUS-01** (PR #23): L1's first code. `load_dbc()`/`DbcDatabase` wrap
+> `cantools`'s own `Database`; the only new logic is bridging decode/encode
+> to `hal.Frame`. First loop to populate INF-04's fixture corpus for real —
+> `fixtures/databases/multiplexed.dbc` (self-authored) plus four golden
+> expected-output JSONs, each derived by running `cantools` directly (never
+> from our own implementation, which didn't exist yet). Found a real
+> subtlety while authoring the fixture, before any code existed:
+> `decode_message()` needs `force_extended_id` passed through explicitly
+> for an extended-ID message, or it raises a bare `KeyError`. All 12
+> tests (7 T3 + 1 T4 + 4 new guardrail unit tests) pass for real locally —
+> DBC decode touches no bus/socket, unlike every `diag/` loop this
+> session. **Also fixed a real gap in `tools/check_blast_radius.py`**,
+> hit directly by this loop: adding new `provenance.toml` entries
+> (purely additive) was flagged the same as tampering with an existing
+> fixture, requiring an unnecessary `fixture-change:` trailer.
+> **Fixture `verified_by` fields are provisional** — flagged in the PR as
+> needing the reviewer's actual confirmation, since an agent can't
+> self-certify per `AGENTS.md`/`PROVENANCE.md`'s own rule.
 
 ## DIAG — L2 Diagnostics Engine (`src/tapwright/diag/`)
 
