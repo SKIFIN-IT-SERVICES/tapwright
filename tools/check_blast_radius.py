@@ -45,7 +45,12 @@ PROTECTED_PREFIXES = ("fixtures/", "tests/differential/expected/")
 # *existing* entry's recorded hash silently changed — is check_fixtures.py's
 # job (content-hash comparison), not blast-radius's file-status check, which
 # only sees "M" either way and can't tell additive from destructive.
-PROVENANCE_MANIFEST_NAME = "provenance.toml"
+#
+# PROVENANCE.md is the human-readable docs file explaining the manifest
+# format — never an oracle itself, not hash-tracked by check_fixtures.py
+# either (see that script's own NOT_FIXTURES set, which this mirrors).
+# Excluded for the same reason: editing the docs isn't editing an oracle.
+NON_FIXTURE_NAMES = {"provenance.toml", "PROVENANCE.md"}
 
 # Paths every loop may touch regardless of its declared radius: the paperwork
 # that goes with any change.
@@ -96,15 +101,15 @@ def matches_any(path: str, patterns: list[str]) -> bool:
 def modified_protected_fixtures(changes: list[tuple[str, str]]) -> list[str]:
     """Which changed paths are an *existing* fixture/expected-output being
     modified or removed — the case that needs a fixture-change: trailer.
-    Newly added fixtures (status A) and provenance.toml itself (see
-    PROVENANCE_MANIFEST_NAME's own note) are excluded deliberately.
+    Newly added fixtures (status A) and the manifest/docs files (see
+    NON_FIXTURE_NAMES's own note) are excluded deliberately.
     """
     return [
         path
         for status, path in changes
         if status in {"M", "D", "R"}
         and path.startswith(PROTECTED_PREFIXES)
-        and path.rsplit("/", 1)[-1] != PROVENANCE_MANIFEST_NAME
+        and path.rsplit("/", 1)[-1] not in NON_FIXTURE_NAMES
     ]
 
 

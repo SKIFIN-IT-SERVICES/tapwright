@@ -231,6 +231,18 @@ def test_provenance_manifest_edit_alone_is_not_flagged():
     assert check_blast_radius.modified_protected_fixtures(changes) == []
 
 
+def test_provenance_docs_edit_alone_is_not_flagged():
+    """fixtures/PROVENANCE.md is human-readable docs, not an oracle — not
+    hash-tracked by check_fixtures.py either (its own NOT_FIXTURES set).
+    A pure line-ending normalization or wording fix shouldn't need a
+    fixture-change: trailer any more than editing README.md would. Caught
+    live in CI on PR #24: a line-ending fix to this exact file failed the
+    guardrails job before this exclusion existed.
+    """
+    changes = [("M", "fixtures/PROVENANCE.md")]
+    assert check_blast_radius.modified_protected_fixtures(changes) == []
+
+
 def test_provenance_manifest_does_not_mask_a_real_fixture_edit():
     """Both changing in the same commit: the manifest edit is excluded, but
     the actual fixture data-file edit is still caught."""
