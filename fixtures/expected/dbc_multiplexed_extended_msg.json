@@ -1,0 +1,11 @@
+{
+  "database": "databases/multiplexed.dbc",
+  "message": "ExtendedMsg",
+  "frame_id": 200,
+  "is_extended_id": true,
+  "data_hex": "78563412",
+  "decoded": {
+    "ExtSignal": 305419896
+  },
+  "notes": "ExtSignal raw=0x12345678 (little-endian bytes 78 56 34 12) = 305419896, scale 1, offset 0. Exercises a 29-bit extended arbitration ID (DBC frame ID 2147483848 = 200 | 0x80000000). Decoded by cantools 42.0.3 directly with force_extended_id=True."
+}

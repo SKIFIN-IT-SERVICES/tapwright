@@ -20,6 +20,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
+import check_blast_radius  # noqa: E402
 import check_fixtures  # noqa: E402
 import check_forbidden  # noqa: E402
 import check_licences  # noqa: E402
@@ -195,6 +196,51 @@ verified_by = "a-human"
 
 def test_live_fixture_corpus_is_intact():
     assert check_fixtures.main([]) == 0
+
+
+# --------------------------------------------------------------------------
+# blast-radius / fixture-change trailer (plan §4.5)
+# --------------------------------------------------------------------------
+
+
+def test_modified_existing_fixture_is_flagged():
+    """The core case the trailer requirement exists for: an *existing*
+    fixture data file changed, no fixture-change: trailer anywhere."""
+    changes = [("M", "fixtures/databases/multiplexed.dbc")]
+    assert check_blast_radius.modified_protected_fixtures(changes) == [
+        "fixtures/databases/multiplexed.dbc"
+    ]
+
+
+def test_added_fixture_is_not_flagged():
+    """A brand-new fixture (status A, not M/D/R) needs no trailer — this
+    module's own docstring says so explicitly."""
+    changes = [("A", "fixtures/databases/new_one.dbc")]
+    assert check_blast_radius.modified_protected_fixtures(changes) == []
+
+
+def test_provenance_manifest_edit_alone_is_not_flagged():
+    """provenance.toml is modified on *every* fixture-adding loop (that's
+    how a new [[fixture]] entry gets recorded) — flagging that as 'an
+    existing fixture changed' would require a fixture-change: trailer for a
+    purely additive edit, contradicting the module's own stated intent.
+    Caught while adding BUS-01's fixtures (issue #22): this exact case
+    would otherwise have failed CI for no real reason.
+    """
+    changes = [("M", "fixtures/provenance.toml")]
+    assert check_blast_radius.modified_protected_fixtures(changes) == []
+
+
+def test_provenance_manifest_does_not_mask_a_real_fixture_edit():
+    """Both changing in the same commit: the manifest edit is excluded, but
+    the actual fixture data-file edit is still caught."""
+    changes = [
+        ("M", "fixtures/provenance.toml"),
+        ("M", "fixtures/expected/dbc_multiplexed_engine_data.json"),
+    ]
+    assert check_blast_radius.modified_protected_fixtures(changes) == [
+        "fixtures/expected/dbc_multiplexed_engine_data.json"
+    ]
 
 
 # --------------------------------------------------------------------------

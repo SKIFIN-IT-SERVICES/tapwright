@@ -1,0 +1,12 @@
+{
+  "database": "databases/multiplexed.dbc",
+  "message": "MuxMessage",
+  "frame_id": 300,
+  "is_extended_id": false,
+  "data_hex": "01d2040000000000",
+  "decoded": {
+    "MuxSelector": 1,
+    "MuxedSignalB": 123.4
+  },
+  "notes": "MuxSelector=1 selects MuxedSignalB (raw=1234, scale 0.1 -> 123.4). Same raw payload bytes as dbc_multiplexed_mux_selector_0.json except the selector byte, decoding to a completely different signal by name and scale, proving the multiplex dispatch is followed rather than positionally assumed. Decoded by cantools 42.0.3 directly."
+}
