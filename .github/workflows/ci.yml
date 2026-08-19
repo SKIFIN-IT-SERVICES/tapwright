@@ -71,6 +71,7 @@ jobs:
   t2-integration:
     name: T2 · integration (vcan)
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -89,6 +90,7 @@ jobs:
   t3-differential:
     name: T3 · differential
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -110,6 +112,7 @@ jobs:
   t4-property:
     name: T4 · property/fuzz
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -126,6 +129,7 @@ jobs:
   coverage-ratchet:
     name: Coverage ratchet (L0-L2)
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
