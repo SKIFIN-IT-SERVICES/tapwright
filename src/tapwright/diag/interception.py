@@ -90,7 +90,16 @@ class InterceptingConnection(BaseConnection):
         self._inner.close()
 
     def is_open(self) -> bool:
-        return self._inner.is_open()
+        # Deliberately not just `self._inner.is_open()`: some inner
+        # connections (e.g. TapwrightIsoTpConnection) report themselves open
+        # immediately at construction, since their underlying transport is
+        # already running. If is_open() delegated to the inner connection
+        # alone, udsoncan.Client.open()'s `if not self.conn.is_open():
+        # self.conn.open()` guard would see True before this wrapper's own
+        # open() -- which binds the listening socket -- ever ran, and the
+        # observer socket would never come up. `self._server is not None`
+        # is this wrapper's own state, set only inside open().
+        return self._server is not None and self._inner.is_open()
 
     def empty_rxqueue(self) -> None:
         self._inner.empty_rxqueue()
