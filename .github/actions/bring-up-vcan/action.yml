@@ -17,8 +17,29 @@ runs:
     - name: Install and load the vcan kernel module
       shell: bash
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y "linux-modules-extra-$(uname -r)"
+        # apt-get against a stuck/congested mirror can hang indefinitely --
+        # observed multiple times as a CI run sitting here for 30-60+ minutes
+        # with no output, well past any reasonable install time. `timeout`
+        # bounds each attempt so a stuck mirror fails fast (a few minutes)
+        # instead of burning the runner for hours; retrying a few times
+        # covers a mirror that's merely slow or transiently unreachable
+        # rather than truly down. (timeout-minutes isn't valid on a
+        # composite action's own steps -- only on workflow-level steps --
+        # so the calling workflow's job-level timeout-minutes is the
+        # backstop if even these bounded retries all stall.)
+        for attempt in 1 2 3; do
+          echo "apt-get attempt $attempt/3"
+          if timeout 120 sudo apt-get update -qq \
+              && timeout 120 sudo apt-get install -y "linux-modules-extra-$(uname -r)"; then
+            break
+          fi
+          if [ "$attempt" = 3 ]; then
+            echo "::error::apt-get did not succeed after 3 attempts" >&2
+            exit 1
+          fi
+          echo "apt-get attempt $attempt failed or timed out; retrying"
+          sleep 10
+        done
         sudo modprobe vcan
     - name: Create and bring up vcan0
       shell: bash
