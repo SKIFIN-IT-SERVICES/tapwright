@@ -8,6 +8,24 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Request/response interception hooks** (DIAG-05, `TOOL-REQ-027`,
+  ADR-004; #25, #29): `tapwright.diag.interception.InterceptingConnection`
+  wraps any `udsoncan.connections.BaseConnection` (CAN or DoIP,
+  transport-agnostic by construction) and publishes every outbound
+  request / inbound response to at most one connected observer over a
+  plain TCP socket speaking newline-delimited JSON — the process-boundary
+  interception point `docs/architecture.md` §4's second bullet requires,
+  so a future Gallia-based fuzzer (a separate repository; boofuzz and
+  CaringCaribou are GPL and can't be linked in-process per ADR-004) can
+  observe or substitute traffic without forking this codebase. With no
+  observer attached, publishing costs one non-blocking `accept()` and adds
+  no latency. An unresponsive, disconnecting, or malformed-reply observer
+  all fall back to passthrough. Fixed a real bug this loop's own CI
+  caught: `is_open()` can't proxy straight to the inner connection, since
+  some inner connections (`TapwrightIsoTpConnection`) report themselves
+  open immediately at construction — that made `udsoncan.Client.open()`'s
+  `if not is_open(): open()` guard skip calling this wrapper's own
+  `open()` (the one that binds the listening socket) entirely.
 - **DBC ingestion + symbolic decode via `cantools`** (BUS-01, `TOOL-REQ-014`;
   #22): `tapwright.dbc_arxml.load_dbc()`/`DbcDatabase` wrap `cantools`'s own
   `Database`, bridging decode/encode to `tapwright.hal.Frame` directly —

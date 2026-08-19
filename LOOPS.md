@@ -20,9 +20,9 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**12 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
+**13 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02, DIAG-01–04, RUN-01, BUS-01. Roughly 32% of the loop
+INF-01–05, HAL-01/02, DIAG-01–05, RUN-01, BUS-01. Roughly 35% of the loop
 count — see each section's table below for per-loop detail; this line
 replaces the former per-milestone rollup table, which drifted out of sync
 with the per-loop tables (a second tracking surface saying something
@@ -32,12 +32,13 @@ first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 `vcan`-provable half done; HAL-03–06 are blocked on physical hardware
-sign-off, a named human task, not an agent one. L2 (DIAG) has a complete,
-transport-agnostic UDS-over-CAN-and-DoIP client, with the interception-hook,
-ODX, SOVD, and hardening loops still ahead. L3 (RUN) has its first fixture,
-with the CLI/report/CI-example loops still ahead. **L1 (BUS) now has its
-first loop** — DBC decode — with ARXML, trace I/O, and restbus still
-ahead of it.
+sign-off, a named human task, not an agent one. L2 (DIAG) now has a
+complete, transport-agnostic UDS-over-CAN-and-DoIP client **plus the
+process-boundary interception point** `docs/architecture.md` §4 requires,
+with ODX, SOVD, and hardening loops still ahead. L3 (RUN) has its first
+fixture, with the CLI/report/CI-example loops still ahead. **L1 (BUS) now
+has its first loop** — DBC decode — with ARXML, trace I/O, and restbus
+still ahead of it.
 
 ---
 
@@ -139,7 +140,7 @@ ahead of it.
 | DIAG-02 | UDS client core via `udsoncan` | W | T4 | 8 | Must | 🔵 |
 | DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔵 |
 | DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔵 |
-| DIAG-05 | Interception/observer hooks — must work across a process boundary | D+I | T2 | 5 | Must | 🔴 |
+| DIAG-05 | Interception/observer hooks — must work across a process boundary | D+I | T2 | 5 | Must | 🔵 |
 | DIAG-06 | ODX/PDX read-only import → DID/routine name resolution | W | T3 | 8 | Should | 🔴 |
 | DIAG-07 | SOVD client (REST/JSON, ISO 17978) | P | T3 | 8 | Should | 🔴 |
 | DIAG-08 | C-10 guardrail: `0x27` mechanics only; CI scan blocks key derivation | H | T1 | 3 | Must | 🔵 landed early with the substrate (`tools/check_forbidden.py`); the deliberate red-team commit that proves CI rejects it is still owed |
@@ -194,6 +195,24 @@ ahead of it.
 > prior `diag/` submodule established (see the test file's own docstring
 > for the full reasoning). M2's exit criterion — "same UDS test passes
 > unmodified over CAN and DoIP" — is now met.
+
+> **DIAG-05** (#25, PR #29 — third attempt: #26 merged before its CI-caught
+> fix had gone through CI and was reverted; #28's merge-base against `main`
+> was left tangled by that revert; #29 was rebuilt clean off `main` and is
+> what actually landed): `InterceptingConnection` wraps any `BaseConnection`
+> (CAN or DoIP) and publishes every request/response to at most one
+> connected observer over TCP + newline-delimited JSON — a genuine
+> cross-process oracle, not a mock: `tests/differential/_interception_
+> observer.py` is a standalone script importing nothing from `tapwright`,
+> spawned as a real subprocess. CI itself caught a real bug — `is_open()`
+> proxying straight to the inner connection, which some inner connections
+> report as open at construction, so `udsoncan.Client.open()` never called
+> this wrapper's own `open()` and the observer socket never bound — fixed
+> and re-verified. Also surfaced (and fixed, PR #30) a real gap in CI infra
+> unrelated to this loop's own code: `bring-up-vcan`'s `apt-get` had no
+> timeout, and a stuck mirror hung three consecutive runs for 30–60+
+> minutes each before failing; now bounded with `timeout` + retry plus a
+> job-level `timeout-minutes` backstop.
 
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
