@@ -72,6 +72,12 @@ dev = [
 [project.entry-points.pytest11]
 tapwright = "tapwright.runner.plugin"
 
+# RUN-05 / TOOL-REQ-030 / ADR-001: the unified CLI entry point. A thin
+# pass-through to pytest.main() (tapwright.runner.cli) -- see that module's
+# docstring for why this isn't a reimplementation of test execution.
+[project.scripts]
+tapwright = "tapwright.runner.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/SKIFIN-IT-SERVICES/tapwright"
 Repository = "https://github.com/SKIFIN-IT-SERVICES/tapwright"

@@ -8,6 +8,16 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Unified CLI** (RUN-05, `TOOL-REQ-030`, ADR-001; #31): a `tapwright`
+  console-script entry point (`tapwright.runner.cli`), plus
+  `python -m tapwright` via a new top-level `__main__.py` — both a thin
+  pass-through to `pytest.main()`, forwarding every argument and returning
+  pytest's own exit code unchanged. Proves ADR-001's "one package, no
+  separate CI build artifact" property directly: the same command line
+  succeeds via both invocation surfaces and in a stripped-down/headless
+  subprocess environment. Deliberately not a `tapwright run` subcommand —
+  there's exactly one thing this CLI does today and no second subcommand
+  to dispatch to yet; that's a natural addition once RUN-02/03/04 exist.
 - **Request/response interception hooks** (DIAG-05, `TOOL-REQ-027`,
   ADR-004; #25, #29): `tapwright.diag.interception.InterceptingConnection`
   wraps any `udsoncan.connections.BaseConnection` (CAN or DoIP,
