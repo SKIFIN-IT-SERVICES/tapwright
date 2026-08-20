@@ -110,6 +110,7 @@ testpaths = ["tests"]
 markers = [
     "requires_vcan: needs a vcan interface (Linux only; skipped elsewhere)",
     "requires_hardware: needs a physical CAN interface — never runs in CI",
+    "requires_docker: needs a working docker CLI + daemon; skipped elsewhere",
 ]
 
 [tool.coverage.run]

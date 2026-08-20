@@ -126,6 +126,23 @@ jobs:
           TAPWRIGHT_TEST_CHANNEL: vcan0
           HYPOTHESIS_PROFILE: ci
 
+  container:
+    name: Container image (RUN-08)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      # Not for a vcan0 on the runner itself -- the container creates its
+      # own, in its own network namespace -- but for the vcan kernel
+      # module, which containers share with the host and cannot load
+      # themselves (see quickstart.py's own docstring).
+      - uses: ./.github/actions/bring-up-vcan
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/integration/test_container.py -v
+
   coverage-ratchet:
     name: Coverage ratchet (L0-L2)
     runs-on: ubuntu-latest
