@@ -20,12 +20,12 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**13 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
+**14 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02, DIAG-01–05, RUN-01, BUS-01. Roughly 35% of the loop
-count — see each section's table below for per-loop detail; this line
-replaces the former per-milestone rollup table, which drifted out of sync
-with the per-loop tables (a second tracking surface saying something
+INF-01–05, HAL-01/02, DIAG-01–05, RUN-01, RUN-05, BUS-01. Roughly 38% of
+the loop count — see each section's table below for per-loop detail; this
+line replaces the former per-milestone rollup table, which drifted out of
+sync with the per-loop tables (a second tracking surface saying something
 different from the first is worse than one surface, even an imperfect one)
 and didn't map cleanly onto the plan's own M1–M6 loop groupings in the
 first place.
@@ -35,9 +35,10 @@ Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 sign-off, a named human task, not an agent one. L2 (DIAG) now has a
 complete, transport-agnostic UDS-over-CAN-and-DoIP client **plus the
 process-boundary interception point** `docs/architecture.md` §4 requires,
-with ODX, SOVD, and hardening loops still ahead. L3 (RUN) has its first
-fixture, with the CLI/report/CI-example loops still ahead. **L1 (BUS) now
-has its first loop** — DBC decode — with ARXML, trace I/O, and restbus
+with ODX, SOVD, and hardening loops still ahead. L3 (RUN) now has its
+fixture layer **and a named CLI entry point**, with the declarative-YAML,
+report, and CI-example loops still ahead. **L1 (BUS) now has its first
+loop** — DBC decode — with ARXML, trace I/O, and restbus
 still ahead of it.
 
 ---
@@ -226,7 +227,7 @@ still ahead of it.
 | RUN-02 | Declarative YAML test format → pytest collection | P | T3 | 8 | Should | 🔴 |
 | RUN-03 | HTML report | W | T2 | 4 | Must | 🔴 |
 | RUN-04 | JSON / ATX-style machine-readable report | W | T2 | 4 | Must | 🔴 |
-| RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔴 |
+| RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔵 |
 | RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔴 |
 | RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔴 |
 | RUN-08 | Container image published alongside PyPI package | X | T2 | 4 | Must | 🔴 |
@@ -242,6 +243,17 @@ still ahead of it.
 > DoIP fixtures and `TOOL-REQ-029` (deterministic `wait_for_*` helpers) are
 > both explicitly out of scope, flagged as fast-follows rather than
 > silently dropped or silently folded in.
+
+> **RUN-05** (#31, PR #32): `tapwright.runner.cli.main()` is a thin
+> pass-through to `pytest.main()`, registered as both an installed console
+> script (`tapwright [pytest-args...]`) and `python -m tapwright` (new
+> top-level `__main__.py`) — the two invocation surfaces proven identical,
+> TOOL-REQ-030's own acceptance test. All 9 CI jobs green first try, T2
+> genuinely exercising the installed console script on Linux. **Not a
+> `tapwright run` subcommand**, unlike the issue's own rough sketch: there
+> is exactly one thing this CLI does today and no second subcommand to
+> distinguish it from — flagged explicitly rather than built speculatively.
+> A subcommand structure is a natural addition once RUN-02/03/04 exist.
 
 > **RUN-09 is human-led by design.** Its oracle is a stopwatch and a person who
 > has never seen the tool. Run it at least twice with different subjects.
