@@ -62,6 +62,17 @@ def _vcan_available() -> bool:
     return result.returncode == 0
 
 
+def _docker_available() -> bool:
+    """Is a working `docker` CLI backed by a live daemon?"""
+    try:
+        result = subprocess.run(
+            ["docker", "info"], capture_output=True, text=True, timeout=10
+        )
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0
+
+
 @pytest.fixture(scope="session")
 def vcan_channel() -> str:
     """The vcan interface tests should use."""
@@ -182,6 +193,14 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         for item in items:
             if "requires_vcan" in item.keywords:
                 item.add_marker(skip_vcan)
+
+    if not _docker_available():
+        skip_docker = pytest.mark.skip(
+            reason="no working docker CLI/daemon (`docker info` failed)"
+        )
+        for item in items:
+            if "requires_docker" in item.keywords:
+                item.add_marker(skip_docker)
 
     # Physical hardware never runs in CI: HAL-03/04/05/06 close at T3-on-vcan,
     # and a named human runs the same suite against real devices out of band,
