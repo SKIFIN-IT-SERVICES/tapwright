@@ -8,6 +8,21 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Malformed-response hardening for our own client stack** (DIAG-09; #35):
+  13 new test cases (`tests/differential/test_client_hardening.py`,
+  `tests/property/test_client_hardening_properties.py`) confirming
+  `open_uds_client()`/`open_doip_uds_client()`/`open_connection()` handle
+  all 4 of INF-05's `FailureInjection` kinds (`nrc`, `timeout`,
+  `truncated`, `oversized`) cleanly — no crash, no hang, clear typed
+  exceptions — across both CAN and DoIP. Closes a real gap: those kinds
+  were previously exercised only against the raw protocol layer and a
+  stock `udsoncan` client, never against Tapwright's own client wrapper.
+  `truncated` (does the ISO-TP consecutive-frame timeout actually fire,
+  or can a stalled multi-frame transfer hang forever?) was the highest-risk
+  untested case; a `hypothesis`-fuzzed NRC byte range (0x00-0xFF) rounds
+  out the T4 tier. No implementation changes were needed — the existing
+  client stack already handled every case correctly; this loop is the
+  verification that proves it, not a bug fix.
 - **Container image build + quickstart smoke test** (RUN-08, `FW-REQ-021`;
   #33): a `Dockerfile` building Tapwright from source, plus `quickstart.py`
   — ADR-005's "zero-hardware onboarding is first-class" promise inside a

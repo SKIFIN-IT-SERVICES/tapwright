@@ -129,7 +129,6 @@ def connection_config(request, vcan_channel, raw_did_codec):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_nrc_response_raises_negative_response_exception_cleanly(connection_config):
     scenario = Scenario(
         dids={TARGET_DID: DIDConfig(value=b"\x01")},
@@ -142,7 +141,6 @@ def test_nrc_response_raises_negative_response_exception_cleanly(connection_conf
             client.read_data_by_identifier(TARGET_DID)
 
 
-@SKIP
 def test_timeout_raises_timeout_exception_cleanly(connection_config):
     scenario = Scenario(
         dids={TARGET_DID: DIDConfig(value=b"\x01")},
@@ -155,7 +153,6 @@ def test_timeout_raises_timeout_exception_cleanly(connection_config):
             client.read_data_by_identifier(TARGET_DID)
 
 
-@SKIP
 def test_oversized_response_completes_normally_no_crash(connection_config):
     scenario = Scenario(
         dids={TARGET_DID: DIDConfig(value=b"\x01")},
@@ -175,7 +172,6 @@ def test_oversized_response_completes_normally_no_crash(connection_config):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_truncated_response_fails_cleanly_and_does_not_hang(connection_config):
     """The literal "no hang" requirement: the ECU declares a multi-frame
     length it never completes. A clean, bounded-time failure -- not an
@@ -198,7 +194,6 @@ def test_truncated_response_fails_cleanly_and_does_not_hang(connection_config):
     assert elapsed < 10.0  # bounded, not indefinite
 
 
-@SKIP
 def test_boundary_nrc_value_translates_correctly(connection_config):
     """A non-obvious NRC byte (0xFF, outside the commonly-used range this
     codebase's own constants cover) still translates to a clean exception
@@ -222,7 +217,6 @@ def test_boundary_nrc_value_translates_correctly(connection_config):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_session_recovers_after_a_failure_injected_request(connection_config):
     """A malformed response to one request must not corrupt the session for
     the next one -- "no crash" means the client, not just the one call,

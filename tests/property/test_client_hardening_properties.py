@@ -60,7 +60,6 @@ def hardened_client(vcan_channel, raw_did_codec) -> Iterator[tuple[Client, Scena
         bus.shutdown()
 
 
-@SKIP
 @settings(deadline=None)
 @given(nrc=st.integers(min_value=0x00, max_value=0xFF))
 def test_any_nrc_byte_translates_to_a_matching_negative_response_exception(hardened_client, nrc):
