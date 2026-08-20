@@ -26,6 +26,15 @@ built image — never a mock of either.
   guarantees `vcan` is loadable, so there is no way to exercise "it isn't"
   without faking the host kernel itself. Documented as a known gap, not
   silently dropped.
+- **Scope correction found during tdd-develop, posted to #33**: the
+  container runs as root, not the non-root user originally planned. Two
+  non-root approaches were tried and both failed for reasons specific to
+  this one-shot, `NET_ADMIN`-requiring entrypoint (capability inheritance
+  doesn't cross a plain `USER` switch; `setcap` at build time hit a Docker
+  overlay-filesystem limitation) -- see the Dockerfile's own comment. The
+  corresponding test now asserts the actual (root) behavior rather than
+  silently dropping the hygiene concern, so a future change away from root
+  has to update this test deliberately.
 - **L2 API-cleanliness note** (test-plan skill step 5): N/A -- this loop
   doesn't touch `diag/`'s public API surface; the quickstart script is a
   *caller* of it, same as any other test.
@@ -48,8 +57,18 @@ RUN_FLAGS = ["--rm", "--cap-add=NET_ADMIN", "--cap-add=NET_RAW"]
 
 
 def docker(*args: str, timeout: int = 120) -> subprocess.CompletedProcess:
+    # Docker's build/run output is UTF-8 regardless of platform; the default
+    # `text=True` encoding follows the OS locale, which on Windows is a
+    # legacy codepage (cp1252) that can't decode it -- observed as a
+    # background-thread UnicodeDecodeError from subprocess's own output
+    # reader, surfacing as a pytest warning rather than a clean failure.
     return subprocess.run(
-        ["docker", *args], capture_output=True, text=True, timeout=timeout
+        ["docker", *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=timeout,
     )
 
 
@@ -69,13 +88,11 @@ def built_image() -> str:
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_image_builds_successfully(built_image):
     result = docker("image", "inspect", built_image)
     assert result.returncode == 0
 
 
-@SKIP
 def test_quickstart_runs_successfully_with_required_capabilities(built_image):
     """The literal RUN-08 acceptance criterion: `docker run` executes the
     quickstart -- vcan bring-up, a VirtualECU, one UDS RDBI round-trip --
@@ -91,7 +108,6 @@ def test_quickstart_runs_successfully_with_required_capabilities(built_image):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_quickstart_can_run_twice_independently(built_image):
     """Each `docker run` gets a fresh network namespace -- the entrypoint
     must not assume a `vcan0` interface already exists from a prior run.
@@ -103,24 +119,31 @@ def test_quickstart_can_run_twice_independently(built_image):
     assert second.returncode == 0, second.stderr
 
 
-@SKIP
 def test_build_context_excludes_git_and_dev_only_files(built_image):
     """`.dockerignore` hygiene: the published image shouldn't carry this
     repo's own `.git` history or CI-only files into a shipped artifact.
     """
-    result = docker(
-        "run", "--rm", "--entrypoint", "sh", built_image, "-c", "test -e /app/.git"
-    )
+    result = docker("run", "--rm", "--entrypoint", "sh", built_image, "-c", "test -e /app/.git")
 
     assert result.returncode != 0  # .git must NOT be present
 
 
-@SKIP
-def test_container_runs_as_non_root_user(built_image):
+def test_container_runs_as_root_deliberately_not_by_default_omission(built_image):
+    """Scope correction, made during tdd-develop and posted to #33: this was
+    originally a non-root check. Two non-root approaches were tried and
+    both failed for filesystem/capability-inheritance reasons specific to
+    this one-shot, `NET_ADMIN`-requiring entrypoint (see the Dockerfile's
+    own comment for what was tried). Rather than silently dropping the
+    hygiene concern, this case asserts the *actual* current behavior --
+    root -- so a future change away from root (e.g. if this image grows a
+    long-running mode where the su/gosu wrapper's cost is worth it) fails
+    this test and has to update it deliberately, instead of the image
+    quietly drifting to non-root with no test noticing either way.
+    """
     result = docker("run", "--rm", "--entrypoint", "id", built_image, "-u")
 
     assert result.returncode == 0
-    assert result.stdout.strip() != "0"
+    assert result.stdout.strip() == "0"
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +151,6 @@ def test_container_runs_as_non_root_user(built_image):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_quickstart_without_required_capabilities_fails_with_actionable_error(built_image):
     """Onboarding-quality requirement: a first-time user who forgets
     `--cap-add` should see a clear message pointing at the missing

@@ -65,9 +65,7 @@ def _vcan_available() -> bool:
 def _docker_available() -> bool:
     """Is a working `docker` CLI backed by a live daemon?"""
     try:
-        result = subprocess.run(
-            ["docker", "info"], capture_output=True, text=True, timeout=10
-        )
+        result = subprocess.run(["docker", "info"], capture_output=True, text=True, timeout=10)
     except (FileNotFoundError, subprocess.SubprocessError):
         return False
     return result.returncode == 0
@@ -195,9 +193,7 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
                 item.add_marker(skip_vcan)
 
     if not _docker_available():
-        skip_docker = pytest.mark.skip(
-            reason="no working docker CLI/daemon (`docker info` failed)"
-        )
+        skip_docker = pytest.mark.skip(reason="no working docker CLI/daemon (`docker info` failed)")
         for item in items:
             if "requires_docker" in item.keywords:
                 item.add_marker(skip_docker)

@@ -8,6 +8,20 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Container image build + quickstart smoke test** (RUN-08, `FW-REQ-021`;
+  #33): a `Dockerfile` building Tapwright from source, plus `quickstart.py`
+  — ADR-005's "zero-hardware onboarding is first-class" promise inside a
+  container: brings up a `vcan0` interface in the container's own network
+  namespace, starts a `VirtualECU`, and completes one UDS RDBI round-trip,
+  with only `--cap-add=NET_ADMIN --cap-add=NET_RAW` at `docker run` time —
+  no interactive host setup. New CI job (`container`) builds the image and
+  runs the smoke test on every push. **Scope**: build + CI smoke test only
+  in this loop — the image is not published to any registry yet, a
+  deliberate, separate, human-triggered action. Runs as root, not the
+  originally-planned non-root user: two non-root approaches (plain `USER`
+  switch, `setcap` on `ip` at build time) both failed for
+  capability-inheritance/filesystem reasons specific to this one-shot,
+  `NET_ADMIN`-requiring entrypoint — documented in the Dockerfile itself.
 - **Unified CLI** (RUN-05, `TOOL-REQ-030`, ADR-001; #31): a `tapwright`
   console-script entry point (`tapwright.runner.cli`), plus
   `python -m tapwright` via a new top-level `__main__.py` — both a thin
