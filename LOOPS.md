@@ -20,15 +20,15 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**14 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; two
+**15 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02, DIAG-01–05, RUN-01, RUN-05, BUS-01. Roughly 38% of
-the loop count — see each section's table below for per-loop detail; this
-line replaces the former per-milestone rollup table, which drifted out of
-sync with the per-loop tables (a second tracking surface saying something
-different from the first is worse than one surface, even an imperfect one)
-and didn't map cleanly onto the plan's own M1–M6 loop groupings in the
-first place.
+INF-01–05, HAL-01/02, DIAG-01–05, RUN-01, RUN-05, RUN-08, BUS-01. Roughly
+41% of the loop count — see each section's table below for per-loop
+detail; this line replaces the former per-milestone rollup table, which
+drifted out of sync with the per-loop tables (a second tracking surface
+saying something different from the first is worse than one surface, even
+an imperfect one) and didn't map cleanly onto the plan's own M1–M6 loop
+groupings in the first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 `vcan`-provable half done; HAL-03–06 are blocked on physical hardware
@@ -36,8 +36,9 @@ sign-off, a named human task, not an agent one. L2 (DIAG) now has a
 complete, transport-agnostic UDS-over-CAN-and-DoIP client **plus the
 process-boundary interception point** `docs/architecture.md` §4 requires,
 with ODX, SOVD, and hardening loops still ahead. L3 (RUN) now has its
-fixture layer **and a named CLI entry point**, with the declarative-YAML,
-report, and CI-example loops still ahead. **L1 (BUS) now has its first
+fixture layer, a named CLI entry point, **and a container image build**,
+with the declarative-YAML and report loops still ahead. **L1 (BUS) now has
+its first
 loop** — DBC decode — with ARXML, trace I/O, and restbus
 still ahead of it.
 
@@ -230,7 +231,7 @@ still ahead of it.
 | RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔵 |
 | RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔴 |
 | RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔴 |
-| RUN-08 | Container image published alongside PyPI package | X | T2 | 4 | Must | 🔴 |
+| RUN-08 | Container image published alongside PyPI package | X | T2 | 4 | Must | 🔵 with a note |
 | RUN-09 | Time-to-first-green-test < 1 hour, measured on real users | D | T5 | 4 | Must | 🔴 |
 
 > **RUN-01** (PR #21): `tapwright.runner.plugin` registered as a `pytest11`
@@ -254,6 +255,25 @@ still ahead of it.
 > is exactly one thing this CLI does today and no second subcommand to
 > distinguish it from — flagged explicitly rather than built speculatively.
 > A subcommand structure is a natural addition once RUN-02/03/04 exist.
+
+> **RUN-08** (#33, PR #34): `Dockerfile` builds Tapwright from source;
+> `quickstart.py` — the first formal "quickstart" defined anywhere in this
+> repo — is the container's entrypoint, bringing up `vcan0` inside the
+> container's own network namespace, starting a `VirtualECU`, and
+> completing one UDS RDBI round-trip, with only `--cap-add=NET_ADMIN
+> --cap-add=NET_RAW` at `docker run` time. New CI job (`container`) builds
+> and smoke-tests the image on every push — all 10 CI jobs green, the
+> vcan-in-container path genuinely validated on real Linux (containers
+> there share the host kernel directly, unlike Docker Desktop's own VM,
+> which has no `vcan` module and couldn't run 2 of the 6 test cases
+> locally). **Scoped to build + CI smoke test only** — no registry push,
+> a deliberate, separate, human-triggered action. **Runs as root, not the
+> originally-planned non-root user**: two non-root approaches (a plain
+> `USER` switch; `setcap` on `ip` at build time) both failed for real,
+> documented reasons specific to this one-shot `NET_ADMIN`-requiring
+> entrypoint — see the Dockerfile's own comment. Marked "with a note"
+> rather than a clean 🔵 for that scope correction, not for anything
+> unverified.
 
 > **RUN-09 is human-led by design.** Its oracle is a stopwatch and a person who
 > has never seen the tool. Run it at least twice with different subjects.
