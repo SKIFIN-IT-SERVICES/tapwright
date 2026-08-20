@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - run: pip install -e ".[dev]"
@@ -62,7 +62,7 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
@@ -74,7 +74,7 @@ jobs:
     timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       # ADR-005 / C-5: the zero-hardware path is first-class, never a fallback.
@@ -93,7 +93,7 @@ jobs:
     timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - uses: ./.github/actions/bring-up-vcan
@@ -115,7 +115,7 @@ jobs:
     timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - uses: ./.github/actions/bring-up-vcan
@@ -132,7 +132,7 @@ jobs:
     timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       # Not for a vcan0 on the runner itself -- the container creates its
@@ -149,7 +149,7 @@ jobs:
     timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - uses: ./.github/actions/bring-up-vcan
@@ -168,7 +168,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # blast-radius check needs history to diff against
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - run: pip install -e ".[dev]"
