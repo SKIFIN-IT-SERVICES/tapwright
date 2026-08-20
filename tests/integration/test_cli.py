@@ -67,7 +67,6 @@ def run_cli(*args: str, cwd: Path, via: str = "module") -> subprocess.CompletedP
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_cli_passes_through_to_pytest_and_returns_its_exit_code(tmp_path):
     (tmp_path / "test_sample.py").write_text(PASSING_TEST)
 
@@ -76,7 +75,6 @@ def test_cli_passes_through_to_pytest_and_returns_its_exit_code(tmp_path):
     assert result.returncode == 0
 
 
-@SKIP
 def test_cli_runs_identically_via_installed_console_script(tmp_path):
     """TOOL-REQ-030's own acceptance test, literally: the same command
     succeeds regardless of which invocation surface (installed script vs.
@@ -96,7 +94,6 @@ def test_cli_runs_identically_via_installed_console_script(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_cli_forwards_arbitrary_pytest_arguments(tmp_path):
     (tmp_path / "test_sample.py").write_text(
         "def test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
@@ -109,7 +106,6 @@ def test_cli_forwards_arbitrary_pytest_arguments(tmp_path):
     assert "test_b" not in result.stdout
 
 
-@SKIP
 def test_cli_with_no_arguments_collects_from_cwd_like_bare_pytest(tmp_path):
     (tmp_path / "test_sample.py").write_text(PASSING_TEST)
 
@@ -118,19 +114,26 @@ def test_cli_with_no_arguments_collects_from_cwd_like_bare_pytest(tmp_path):
     assert result.returncode == 0
 
 
-@SKIP
 def test_cli_succeeds_in_a_minimal_headless_subprocess_environment(tmp_path):
     """A proxy for ADR-001's "laptop, headless bench, and container" claim:
-    a stripped-down environment (no DISPLAY, no interactive-only vars) with
-    only PATH and the Python install preserved, run in a genuinely separate
-    process. Nothing about the CLI should depend on an interactive desktop.
+    an environment with interactive/desktop-only variables stripped, run in
+    a genuinely separate process. Nothing about the CLI should depend on an
+    interactive desktop.
+
+    Starts from a *copy* of the real environment rather than an empty
+    allowlist: Python's own package resolution can depend on machine-
+    specific variables (e.g. a `--user`-site install needs `APPDATA` on
+    Windows) that have nothing to do with "interactive desktop" and would
+    make this a test of this dev machine's install method, not of the CLI.
+    A real container's packages live in its own site-packages regardless,
+    so this doesn't weaken the proxy for that environment.
     """
     import os
 
     (tmp_path / "test_sample.py").write_text(PASSING_TEST)
-    minimal_env = {"PATH": os.environ["PATH"]}
-    if sys.platform == "win32":
-        minimal_env["SYSTEMROOT"] = os.environ.get("SYSTEMROOT", "")
+    headless_env = dict(os.environ)
+    for var in ("DISPLAY", "WAYLAND_DISPLAY", "XDG_SESSION_TYPE", "TERM_PROGRAM"):
+        headless_env.pop(var, None)
 
     result = subprocess.run(
         [sys.executable, "-m", "tapwright", "test_sample.py"],
@@ -138,7 +141,7 @@ def test_cli_succeeds_in_a_minimal_headless_subprocess_environment(tmp_path):
         capture_output=True,
         text=True,
         timeout=60,
-        env=minimal_env,
+        env=headless_env,
     )
 
     assert result.returncode == 0
@@ -149,7 +152,6 @@ def test_cli_succeeds_in_a_minimal_headless_subprocess_environment(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_cli_returns_pytest_failure_exit_code_unmasked(tmp_path):
     (tmp_path / "test_sample.py").write_text(FAILING_TEST)
 
@@ -158,14 +160,12 @@ def test_cli_returns_pytest_failure_exit_code_unmasked(tmp_path):
     assert result.returncode == 1
 
 
-@SKIP
 def test_cli_returns_pytest_usage_error_exit_code_unmasked(tmp_path):
     result = run_cli("--not-a-real-flag", cwd=tmp_path)
 
     assert result.returncode == 4
 
 
-@SKIP
 def test_cli_returns_no_tests_collected_exit_code_unmasked(tmp_path):
     result = run_cli(cwd=tmp_path)  # empty directory, nothing to collect
 
