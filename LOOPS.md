@@ -20,22 +20,23 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**15 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
+**16 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02, DIAG-01–05, RUN-01, RUN-05, RUN-08, BUS-01. Roughly
-41% of the loop count — see each section's table below for per-loop
-detail; this line replaces the former per-milestone rollup table, which
-drifted out of sync with the per-loop tables (a second tracking surface
-saying something different from the first is worse than one surface, even
-an imperfect one) and didn't map cleanly onto the plan's own M1–M6 loop
-groupings in the first place.
+INF-01–05, HAL-01/02, DIAG-01–05, DIAG-09, RUN-01, RUN-05, RUN-08, BUS-01.
+Roughly 43% of the loop count — see each section's table below for
+per-loop detail; this line replaces the former per-milestone rollup table,
+which drifted out of sync with the per-loop tables (a second tracking
+surface saying something different from the first is worse than one
+surface, even an imperfect one) and didn't map cleanly onto the plan's own
+M1–M6 loop groupings in the first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 `vcan`-provable half done; HAL-03–06 are blocked on physical hardware
 sign-off, a named human task, not an agent one. L2 (DIAG) now has a
-complete, transport-agnostic UDS-over-CAN-and-DoIP client **plus the
+complete, transport-agnostic UDS-over-CAN-and-DoIP client, **the
 process-boundary interception point** `docs/architecture.md` §4 requires,
-with ODX, SOVD, and hardening loops still ahead. L3 (RUN) now has its
+**and confirmed malformed-response hardening**, with ODX and SOVD loops
+still ahead. L3 (RUN) now has its
 fixture layer, a named CLI entry point, **and a container image build**,
 with the declarative-YAML and report loops still ahead. **L1 (BUS) now has
 its first
@@ -146,7 +147,7 @@ still ahead of it.
 | DIAG-06 | ODX/PDX read-only import → DID/routine name resolution | W | T3 | 8 | Should | 🔴 |
 | DIAG-07 | SOVD client (REST/JSON, ISO 17978) | P | T3 | 8 | Should | 🔴 |
 | DIAG-08 | C-10 guardrail: `0x27` mechanics only; CI scan blocks key derivation | H | T1 | 3 | Must | 🔵 landed early with the substrate (`tools/check_forbidden.py`); the deliberate red-team commit that proves CI rejects it is still owed |
-| DIAG-09 | Malformed-response hardening: NRCs, timeouts, truncated frames | H | T4 | 7 | Must | 🔴 |
+| DIAG-09 | Malformed-response hardening: NRCs, timeouts, truncated frames | H | T4 | 7 | Must | 🔵 |
 
 > **DIAG-01** (PR #12): `IsoTpTransport` built on `hal.Bus` via `rxfn`/`txfn`
 > adapters, not a raw `python-can` bus — deliberately, so L2 sits on L0
@@ -215,6 +216,27 @@ still ahead of it.
 > timeout, and a stuck mirror hung three consecutive runs for 30–60+
 > minutes each before failing; now bounded with `timeout` + retry plus a
 > job-level `timeout-minutes` backstop.
+
+> **DIAG-09** (#35, PR #36): 13 new cases across
+> `tests/differential/test_client_hardening.py` (6 deterministic cases × 2
+> transports) and `tests/property/test_client_hardening_properties.py` (1
+> `hypothesis`-fuzzed NRC byte range) confirm `open_uds_client()`/
+> `open_doip_uds_client()`/`open_connection()` handle all 4 of INF-05's
+> `FailureInjection` kinds cleanly — a gap DIAG-02/03's own test plans
+> never closed (they only exercised `timeout`), and one
+> `test_virtual_ecu_uds.py` explicitly flagged as owed to this loop.
+> **No implementation changes were needed** — the existing client stack
+> already handled every case correctly, `truncated` (the "no hang" case)
+> included, on the very first run. The T4 fuzz test *did* catch something
+> real on its first CI run, though: 0x78
+> (`RequestCorrectlyReceived_ResponsePending`) is spec-legitimate "please
+> wait," and `udsoncan` correctly waits for a real final response instead
+> of treating it as terminal — since the injected failure never sends one,
+> the client times out rather than raising `NegativeResponseException`.
+> Not a hang, not a crash, just a different (still clear) exception for a
+> protocol-legitimate reason — fixed by excluding 0x78 from the general
+> fuzz strategy and adding a dedicated case for it, rather than narrowing
+> the fuzzed range silently.
 
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
