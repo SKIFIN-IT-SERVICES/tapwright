@@ -18,6 +18,24 @@ this tier prohibitively slow (same rationale as
 `test_uds_client_properties.py`). `Scenario.failure_injections` is read
 live per-request by the responder (`ProtocolState.matching_injection`),
 so each example mutates it in place rather than rebuilding the ECU.
+
+## Correction found by this exact test, on its first CI run
+
+0x78 (`RequestCorrectlyReceived_ResponsePending`, "RCR-RP") is not just
+another negative response code -- ISO 14229 gives it special client-side
+handling: on receiving it, a spec-correct client does *not* treat it as
+terminal, it resets its P2 timer and keeps waiting for the real final
+response. `udsoncan` implements this correctly. The virtual ECU's
+`FailureInjection` sends the one negative response and nothing else, so a
+client that receives 0x78 waits for a follow-up that never arrives and
+raises `TimeoutException`, not `NegativeResponseException` -- CI caught
+this on the very first run of this property test. That is not a hang (it
+completes within the client's own bounded timeout) and not a crash (a
+clear, typed exception) -- it satisfies "no crash, no hang, clear errors"
+just as much as the general case, with a different exception type for a
+protocol-legitimate reason. 0x78 is excluded from the general property
+below and covered by its own dedicated case instead of being silently
+dropped from the fuzzed range.
 """
 
 from __future__ import annotations
@@ -28,7 +46,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from udsoncan.client import Client
-from udsoncan.exceptions import NegativeResponseException
+from udsoncan.exceptions import NegativeResponseException, TimeoutException
 
 from tapwright.diag.uds_client import open_uds_client
 from tapwright.diag.virtual_ecu import DIDConfig, FailureInjection, Scenario, VirtualECU
@@ -38,8 +56,6 @@ pytestmark = pytest.mark.requires_vcan
 
 TEST_DID = 0x1234
 RDBI_SID = 0x22
-
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #35)")
 
 
 @pytest.fixture(scope="module")
@@ -60,8 +76,11 @@ def hardened_client(vcan_channel, raw_did_codec) -> Iterator[tuple[Client, Scena
         bus.shutdown()
 
 
+RCR_RP = 0x78  # RequestCorrectlyReceived_ResponsePending -- see module docstring
+
+
 @settings(deadline=None)
-@given(nrc=st.integers(min_value=0x00, max_value=0xFF))
+@given(nrc=st.integers(min_value=0x00, max_value=0xFF).filter(lambda value: value != RCR_RP))
 def test_any_nrc_byte_translates_to_a_matching_negative_response_exception(hardened_client, nrc):
     client, scenario = hardened_client
     scenario.failure_injections = [
@@ -72,3 +91,18 @@ def test_any_nrc_byte_translates_to_a_matching_negative_response_exception(harde
         client.read_data_by_identifier(TEST_DID)
 
     assert exc_info.value.response.code == nrc
+
+
+def test_response_pending_nrc_times_out_cleanly_instead_of_hanging(hardened_client):
+    """0x78 (RCR-RP) is spec-legitimate "please wait" -- the client resets
+    its timer and waits for the real final response. This injected failure
+    never sends one, so the client must time out cleanly (bounded, typed
+    exception) rather than hang indefinitely.
+    """
+    client, scenario = hardened_client
+    scenario.failure_injections = [
+        FailureInjection(service_id=RDBI_SID, selector=TEST_DID, kind="nrc", nrc=RCR_RP)
+    ]
+
+    with pytest.raises(TimeoutException):
+        client.read_data_by_identifier(TEST_DID)

@@ -66,8 +66,6 @@ from tapwright.diag.virtual_ecu import (
 )
 from tapwright.hal import open_bus
 
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #35)")
-
 DOIP_ECU_HOST = "127.0.0.1"
 DOIP_ECU_LOGICAL_ADDRESS = 0x0001
 DOIP_CLIENT_LOGICAL_ADDRESS = 0xE00
