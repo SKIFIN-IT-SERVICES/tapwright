@@ -8,6 +8,18 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **JSON machine-readable report** (RUN-04, `TOOL-REQ-032`; #41): an
+  auto-generated JSON report after every test run — wraps
+  `pytest-json-report` (new dependency, MIT) via the same
+  auto-enable-with-zero-flags `pytest_configure` hook RUN-03 added, rather
+  than reimplementing report generation. Validates against a new schema
+  this loop defines and ships (`docs/schemas/run-report.schema.json`) —
+  deliberately a subset of the underlying library's own output, and
+  deliberately not the full ASAM ATX standard `TOOL-REQ-032`'s title
+  mentions, since the requirement's own wording rules that out for now
+  ("not built now, just don't block it"). Priority filed as Should,
+  matching `TOOL-REQ-032`'s own MoSCoW rating (the plan's loop table said
+  Must — a discrepancy flagged rather than silently picked).
 - **HTML report** (RUN-03, `TOOL-REQ-031`; #39): a self-contained,
   auto-generated HTML report (pass/fail, timing) after every test run —
   wraps `pytest-html` (new dependency, MPL-2.0) rather than reimplementing

@@ -40,25 +40,47 @@ from tapwright.hal import Bus, open_bus
 
 DEFAULT_CHANNEL = "vcan0"
 DEFAULT_HTML_REPORT_PATH = "tapwright-report.html"
+DEFAULT_JSON_REPORT_PATH = "tapwright-report.json"
 
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config: pytest.Config) -> None:
-    """Auto-enables `pytest-html`'s report with zero required flags —
-    `TOOL-REQ-031`'s "without additional configuration" — by setting its
-    `htmlpath` option before `pytest-html`'s own `pytest_configure` reads
-    it (that's what `tryfirst=True` is for: `pytest-html`'s reporter only
-    registers if `htmlpath` is already truthy by the time its hook runs).
+    """Auto-enables `pytest-html`'s (RUN-03, `TOOL-REQ-031`) and
+    `pytest-json-report`'s (RUN-04, `TOOL-REQ-032`) reports with zero
+    required flags — both requirements' "without additional configuration"
+    / "not built now, just don't block it" wording — by setting each
+    plugin's own option before its `pytest_configure` reads it (that's
+    what `tryfirst=True` is for: both plugins' reporters only register if
+    their option is already truthy by the time their own hook runs).
 
-    Only fills the gap: an explicit `--html=...` from the user is never
-    overridden, and if `pytest-html` isn't installed for some reason this
-    is a silent no-op rather than a hard dependency failure at collection
-    time (`hasplugin` returning `False` on a fresh entry-point rescan is
-    the only realistic way that happens, since it's a declared dependency).
+    Each only fills its gap: an explicit `--html=...`/`--json-report...`
+    from the user is never overridden, and if a plugin isn't installed for
+    some reason this is a silent no-op rather than a hard dependency
+    failure at collection time (`hasplugin` returning `False` on a fresh
+    entry-point rescan is the only realistic way that happens, since both
+    are declared dependencies).
     """
     if config.pluginmanager.hasplugin("html") and not config.getoption("htmlpath", None):
         config.option.htmlpath = DEFAULT_HTML_REPORT_PATH
         config.option.self_contained_html = True
+
+    if config.pluginmanager.hasplugin("pytest_jsonreport"):
+        # Unlike pytest-html's single `htmlpath` option, pytest-json-report
+        # splits "enabled" (--json-report, a bool) from "where"
+        # (--json-report-file, its own default ".report.json") into two
+        # options -- found directly while writing this loop's own test:
+        # a user passing only --json-report-file, without --json-report,
+        # is clearly choosing a path and expects a report there, but
+        # naively only checking the bool would both fail to honor that
+        # path AND overwrite it with our own default.
+        user_chose_path = config.getoption("json_report_file", None) not in (
+            None,
+            ".report.json",
+        )
+        if not config.getoption("json_report", False):
+            config.option.json_report = True
+            if not user_chose_path:
+                config.option.json_report_file = DEFAULT_JSON_REPORT_PATH
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
