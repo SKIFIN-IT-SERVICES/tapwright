@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """The `pytest11` plugin: `ecu`, `bus`, `uds` fixtures (RUN-01,
-`TOOL-REQ-028`).
+`TOOL-REQ-028`) and an auto-enabled HTML report (RUN-03, `TOOL-REQ-031`).
 
 Registered via `pyproject.toml`'s `[project.entry-points.pytest11]` — pytest
 auto-discovers this on `pip install tapwright`, so a user's own test file
@@ -39,6 +39,26 @@ from tapwright.diag.virtual_ecu import Scenario, VirtualECU
 from tapwright.hal import Bus, open_bus
 
 DEFAULT_CHANNEL = "vcan0"
+DEFAULT_HTML_REPORT_PATH = "tapwright-report.html"
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config: pytest.Config) -> None:
+    """Auto-enables `pytest-html`'s report with zero required flags —
+    `TOOL-REQ-031`'s "without additional configuration" — by setting its
+    `htmlpath` option before `pytest-html`'s own `pytest_configure` reads
+    it (that's what `tryfirst=True` is for: `pytest-html`'s reporter only
+    registers if `htmlpath` is already truthy by the time its hook runs).
+
+    Only fills the gap: an explicit `--html=...` from the user is never
+    overridden, and if `pytest-html` isn't installed for some reason this
+    is a silent no-op rather than a hard dependency failure at collection
+    time (`hasplugin` returning `False` on a fresh entry-point rescan is
+    the only realistic way that happens, since it's a declared dependency).
+    """
+    if config.pluginmanager.hasplugin("html") and not config.getoption("htmlpath", None):
+        config.option.htmlpath = DEFAULT_HTML_REPORT_PATH
+        config.option.self_contained_html = True
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

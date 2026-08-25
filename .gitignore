@@ -24,6 +24,10 @@ env/
 htmlcov/
 coverage.xml
 
+# RUN-03: auto-generated HTML test report (tapwright.runner.plugin's
+# pytest_configure default) -- a build artifact, not something to commit.
+tapwright-report.html
+
 # Editors / OS
 .vscode/
 .idea/
