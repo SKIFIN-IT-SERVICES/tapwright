@@ -20,15 +20,15 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**18 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
+**19 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02/08, DIAG-01–05, DIAG-09, RUN-01, RUN-05, RUN-08,
-BUS-01/02. Roughly 49% of the loop count — see each section's table below
-for per-loop detail; this line replaces the former per-milestone rollup
-table, which drifted out of sync with the per-loop tables (a second
-tracking surface saying something different from the first is worse than
-one surface, even an imperfect one) and didn't map cleanly onto the plan's
-own M1–M6 loop groupings in the first place.
+INF-01–05, HAL-01/02/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-05,
+RUN-08, BUS-01/02. Roughly 51% of the loop count — see each section's
+table below for per-loop detail; this line replaces the former
+per-milestone rollup table, which drifted out of sync with the per-loop
+tables (a second tracking surface saying something different from the
+first is worse than one surface, even an imperfect one) and didn't map
+cleanly onto the plan's own M1–M6 loop groupings in the first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 `vcan`-provable half done **plus LGPL isolation (HAL-08)**; HAL-03–06 are
@@ -39,8 +39,9 @@ complete, transport-agnostic UDS-over-CAN-and-DoIP client, **the
 process-boundary interception point** `docs/architecture.md` §4 requires,
 **and confirmed malformed-response hardening**, with ODX and SOVD loops
 still ahead. L3 (RUN) now has its
-fixture layer, a named CLI entry point, **and a container image build**,
-with the declarative-YAML and report loops still ahead. **L1 (BUS) now has
+fixture layer, a named CLI entry point, a container image build, **and an
+HTML report**, with the declarative-YAML and JSON-report loops still
+ahead. **L1 (BUS) now has
 DBC and ARXML decode both first-class**, with trace I/O and restbus still
 ahead of it.
 
@@ -273,7 +274,7 @@ ahead of it.
 |---|---|---|---|---|---|---|
 | RUN-01 | pytest plugin: `bus`, `uds_client`, `virtual_ecu` fixtures | D+I | T2 | 6 | Must | 🔵 |
 | RUN-02 | Declarative YAML test format → pytest collection | P | T3 | 8 | Should | 🔴 |
-| RUN-03 | HTML report | W | T2 | 4 | Must | 🔴 |
+| RUN-03 | HTML report | W | T2 | 4 | Must | 🔵 |
 | RUN-04 | JSON / ATX-style machine-readable report | W | T2 | 4 | Must | 🔴 |
 | RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔵 |
 | RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔴 |
@@ -291,6 +292,22 @@ ahead of it.
 > DoIP fixtures and `TOOL-REQ-029` (deterministic `wait_for_*` helpers) are
 > both explicitly out of scope, flagged as fast-follows rather than
 > silently dropped or silently folded in.
+
+> **RUN-03** (#39, PR #40): wraps `pytest-html` (MPL-2.0, new dependency)
+> rather than reimplementing report rendering — a `tryfirst`
+> `pytest_configure` hook in `tapwright.runner.plugin` sets a default
+> `--html` path only if the user hasn't already chosen one, so a report
+> appears with zero required flags (`tryfirst=True` matters:
+> `pytest-html`'s own `pytest_configure` only registers its reporter if
+> `htmlpath` is already truthy by the time its hook runs). **"Decoded
+> frames" not built** — no mechanism anywhere in the codebase records
+> which frames a test exchanged for a report to read back, flagged as a
+> real follow-up rather than silently dropped. **Determinism scoped to the
+> results table, not raw bytes** — found directly while writing the test
+> plan: `pytest-html`'s own template embeds a generation timestamp and a
+> per-test wall-clock duration, both legitimate variance for a report
+> that's required to include timing at all (`TOOL-REQ-031` names it). All
+> 10 CI jobs green.
 
 > **RUN-05** (#31, PR #32): `tapwright.runner.cli.main()` is a thin
 > pass-through to `pytest.main()`, registered as both an installed console
