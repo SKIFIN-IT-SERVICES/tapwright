@@ -20,10 +20,10 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**16 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
+**17 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02, DIAG-01–05, DIAG-09, RUN-01, RUN-05, RUN-08, BUS-01.
-Roughly 43% of the loop count — see each section's table below for
+INF-01–05, HAL-01/02/08, DIAG-01–05, DIAG-09, RUN-01, RUN-05, RUN-08,
+BUS-01. Roughly 46% of the loop count — see each section's table below for
 per-loop detail; this line replaces the former per-milestone rollup table,
 which drifted out of sync with the per-loop tables (a second tracking
 surface saying something different from the first is worse than one
@@ -31,8 +31,10 @@ surface, even an imperfect one) and didn't map cleanly onto the plan's own
 M1–M6 loop groupings in the first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
-`vcan`-provable half done; HAL-03–06 are blocked on physical hardware
-sign-off, a named human task, not an agent one. L2 (DIAG) now has a
+`vcan`-provable half done **plus LGPL isolation (HAL-08)**; HAL-03–06 are
+blocked on physical hardware sign-off, a named human task, not an agent
+one; HAL-07 (capability detection) is the one HAL loop still genuinely
+open. L2 (DIAG) now has a
 complete, transport-agnostic UDS-over-CAN-and-DoIP client, **the
 process-boundary interception point** `docs/architecture.md` §4 requires,
 **and confirmed malformed-response hardening**, with ODX and SOVD loops
@@ -72,7 +74,7 @@ still ahead of it.
 | HAL-05 | PEAK PCANBasic backend | W | T3 | 4 | Should | 🔴 |
 | HAL-06 | Vector XL backend | W | T3 | 5 | Should | 🔴 |
 | HAL-07 | Capability detection + graceful degradation | H | T4 | 5 | Must | 🔴 |
-| HAL-08 | LGPL isolation for `python-can` — dependency only, never vendored | X | T1 | 2 | Must | 🔴 |
+| HAL-08 | LGPL isolation for `python-can` — dependency only, never vendored | X | T1 | 2 | Must | 🔵 |
 
 > **HAL-01/HAL-02** landed together as PR #4 (`src/tapwright/hal/{bus,frame,errors}.py`,
 > authored by @surendersinghIT, opened 2026-07-31 — before the loop
@@ -87,8 +89,15 @@ still ahead of it.
 > every other round-trip case. **All 9 CI jobs green, PR clean/mergeable.**
 > `Bus`/`Frame`/`HalError` cover SocketCAN + `vcan` only — `gs_usb` (HAL-03),
 > Kvaser (HAL-04), and the remaining backends are separate, not-yet-started
-> loops, same as HAL-08 (LGPL isolation, not yet enforced for `hal/`
-> specifically — INF-03's licence gate already covers `python-can` generally).
+> loops. **Correction (2026-08-25): HAL-08 is not one of them** — its full
+> acceptance criterion ("build fails if `python-can` source is vendored
+> into the tree") was already implemented by INF-03's licence gate
+> (`tools/check_licences.py`'s vendoring scan, repo-wide rather than
+> `hal/`-scoped, which the criterion doesn't require) and already has two
+> red-team tests proving it fires (`test_vendored_copyleft_is_detected`,
+> `test_vendor_directory_is_detected`, `tests/unit/test_guardrails.py`),
+> both green in CI's own T1/guardrails jobs. `LOOPS.md` just never
+> reflected it — marked 🔵 now, no new code needed.
 
 > **HAL-03/04/05/06 each need a physical-hardware sign-off no agent can
 > perform.** The loop closes at T3-on-`vcan`; a named human runs the same suite
