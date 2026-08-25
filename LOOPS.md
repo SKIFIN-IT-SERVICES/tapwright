@@ -20,15 +20,15 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**17 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
+**18 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
 partials, 🔵 with a note, count as "landed but not formally signed off"):
 INF-01–05, HAL-01/02/08, DIAG-01–05, DIAG-09, RUN-01, RUN-05, RUN-08,
-BUS-01. Roughly 46% of the loop count — see each section's table below for
-per-loop detail; this line replaces the former per-milestone rollup table,
-which drifted out of sync with the per-loop tables (a second tracking
-surface saying something different from the first is worse than one
-surface, even an imperfect one) and didn't map cleanly onto the plan's own
-M1–M6 loop groupings in the first place.
+BUS-01/02. Roughly 49% of the loop count — see each section's table below
+for per-loop detail; this line replaces the former per-milestone rollup
+table, which drifted out of sync with the per-loop tables (a second
+tracking surface saying something different from the first is worse than
+one surface, even an imperfect one) and didn't map cleanly onto the plan's
+own M1–M6 loop groupings in the first place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has the
 `vcan`-provable half done **plus LGPL isolation (HAL-08)**; HAL-03–06 are
@@ -41,9 +41,8 @@ process-boundary interception point** `docs/architecture.md` §4 requires,
 still ahead. L3 (RUN) now has its
 fixture layer, a named CLI entry point, **and a container image build**,
 with the declarative-YAML and report loops still ahead. **L1 (BUS) now has
-its first
-loop** — DBC decode — with ARXML, trace I/O, and restbus
-still ahead of it.
+DBC and ARXML decode both first-class**, with trace I/O and restbus still
+ahead of it.
 
 ---
 
@@ -116,7 +115,7 @@ still ahead of it.
 | ID | Goal | Type | Tier | It. | Pri | Status |
 |---|---|---|---|---|---|---|
 | BUS-01 | DBC load + decode/encode via `cantools` | W | T4 | 5 | Must | 🔵 |
-| BUS-02 | ARXML load + decode; dual-specification path (lightweight input first-class) | W | T4 | 7 | Must | 🔴 |
+| BUS-02 | ARXML load + decode; dual-specification path (lightweight input first-class) | W | T4 | 7 | Must | 🔵 |
 | BUS-03 | LDF (LIN) database support | W | T3 | 4 | Should | 🔴 |
 | BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | 🔴 |
 | BUS-05 | Trace I/O: BLF + ASC read/write | W | T4 | 6 | Must | 🔴 |
@@ -143,6 +142,23 @@ still ahead of it.
 > **Fixture `verified_by` fields are provisional** — flagged in the PR as
 > needing the reviewer's actual confirmation, since an agent can't
 > self-certify per `AGENTS.md`/`PROVENANCE.md`'s own rule.
+
+> **BUS-02** (#37, PR #38): `load_arxml()`, sharing `load_dbc()`'s wrapper
+> class — renamed `DbcDatabase` → `CanDatabase` since `cantools` parses
+> DBC and ARXML into the identical `Database` type, so a format-specific
+> class name was never accurate (flagged as a correction from the issue's
+> own sketch, not silent). New self-authored fixture
+> `fixtures/databases/vehicle_signals.arxml` — hand-authored AUTOSAR 4.x
+> XML, since `cantools` 42.0.3 has no ARXML *write* support to generate
+> one programmatically; iterated against `cantools` itself (wrong
+> `ADDRESSING-MODE` element name, wrong `SYSTEM-SIGNAL`/`COMPU-METHOD`
+> linkage path) until it parsed and decoded correctly. This loop's
+> required "known-gap list" deliverable (the plan's own risk-mitigation
+> note for BUS-02) is `docs/bus-02-arxml-known-gaps.md`: no ARXML write
+> support, Adaptive AUTOSAR unverified, only `LINEAR` compu-methods
+> exercised. **Dual-specification path proven, not just asserted** —
+> `test_dbc_path_remains_fully_functional_alongside_arxml` loads BUS-01's
+> DBC and this loop's ARXML in the same session. All 10 CI jobs green.
 
 ## DIAG — L2 Diagnostics Engine (`src/tapwright/diag/`)
 
