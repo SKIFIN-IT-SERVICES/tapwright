@@ -163,3 +163,15 @@ licence = "MPL-2.0"
 verified = "2026-08-25"
 role = "RUN-03: HTML report generation, wrapped rather than reimplemented"
 notes = "MPL-2.0 is file-level copyleft; used as an unmodified PyPI dependency, never vendored. Pulls in pytest-metadata (also MPL-2.0, transitive, not separately declared in pyproject.toml so not separately entered here)."
+
+[[dependency]]
+name = "pytest-json-report"
+licence = "MIT"
+verified = "2026-08-25"
+role = "RUN-04: JSON report generation, wrapped rather than reimplemented"
+
+[[dependency]]
+name = "jsonschema"
+licence = "MIT"
+verified = "2026-08-25"
+role = "RUN-04's own test suite: validates the JSON report against docs/schemas/run-report.schema.json (dev only)"

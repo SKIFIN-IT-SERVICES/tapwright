@@ -54,6 +54,7 @@ dependencies = [
     "doipclient>=1.1",
     "cantools>=42",  # fixtures/expected/*.json were derived against 42.0.3
     "pytest-html>=4.2",  # RUN-03: HTML report, wraps rather than reimplements
+    "pytest-json-report>=1.5",  # RUN-04: JSON report, wraps rather than reimplements
 ]
 
 [project.optional-dependencies]
@@ -61,6 +62,7 @@ dev = [
     "pytest>=8",
     "pytest-cov",
     "hypothesis>=6",          # T4 property/fuzz tier
+    "jsonschema>=4",          # RUN-04's own test suite: schema validation
     "ruff",
     "mypy",
     "pre-commit",

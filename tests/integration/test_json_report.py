@@ -49,10 +49,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #41)")
-
 PASSING_TEST = "def test_ok():\n    assert True\n"
 FAILING_TEST = "def test_not_ok():\n    assert False\n"
 MIXED_SUITE = (
@@ -63,9 +59,7 @@ MIXED_SUITE = (
     "def test_c():\n    assert True\n"
 )
 
-SCHEMA_PATH = (
-    Path(__file__).resolve().parents[2] / "docs" / "schemas" / "run-report.schema.json"
-)
+SCHEMA_PATH = Path(__file__).resolve().parents[2] / "docs" / "schemas" / "run-report.schema.json"
 
 
 def run_pytest(*args: str, cwd: Path) -> subprocess.CompletedProcess:
@@ -85,7 +79,6 @@ def run_pytest(*args: str, cwd: Path) -> subprocess.CompletedProcess:
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_report_auto_generates_with_no_explicit_flag(tmp_path):
     (tmp_path / "test_sample.py").write_text(PASSING_TEST)
 
@@ -95,7 +88,6 @@ def test_report_auto_generates_with_no_explicit_flag(tmp_path):
     assert len(reports) == 1
 
 
-@SKIP
 def test_report_contains_every_result(tmp_path):
     (tmp_path / "test_sample.py").write_text(MIXED_SUITE)
 
@@ -115,7 +107,6 @@ def test_report_contains_every_result(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_explicit_json_report_file_is_not_overridden(tmp_path):
     (tmp_path / "test_sample.py").write_text(PASSING_TEST)
     custom_path = tmp_path / "custom_report.json"
@@ -126,7 +117,6 @@ def test_explicit_json_report_file_is_not_overridden(tmp_path):
     assert not any(p.name != "custom_report.json" for p in tmp_path.glob("*.json"))
 
 
-@SKIP
 def test_report_round_trips_through_json(tmp_path):
     """The literal "round-trips" requirement: parse, re-serialize,
     re-parse, same data survives.
@@ -141,9 +131,8 @@ def test_report_round_trips_through_json(tmp_path):
     assert first == second
 
 
-@SKIP
 def test_report_validates_against_our_schema(tmp_path):
-    """"Schema-validates" against `docs/schemas/run-report.schema.json` —
+    """ "Schema-validates" against `docs/schemas/run-report.schema.json` —
     the schema this loop defines and ships, not an external ATX spec (see
     module docstring).
     """
@@ -163,7 +152,6 @@ def test_report_validates_against_our_schema(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_failed_test_has_failed_outcome_in_the_report(tmp_path):
     (tmp_path / "test_sample.py").write_text(FAILING_TEST)
 
@@ -175,7 +163,6 @@ def test_failed_test_has_failed_outcome_in_the_report(tmp_path):
     assert test["outcome"] == "failed"
 
 
-@SKIP
 def test_skipped_test_has_skipped_outcome_not_silently_dropped(tmp_path):
     (tmp_path / "test_sample.py").write_text(MIXED_SUITE)
 
