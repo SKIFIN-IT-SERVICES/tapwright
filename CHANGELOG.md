@@ -8,6 +8,20 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **ARXML ingestion + symbolic decode via `cantools`** (BUS-02,
+  `TOOL-REQ-015`; #37): `tapwright.dbc_arxml.load_arxml()`, sharing
+  `load_dbc()`'s wrapper class — renamed `DbcDatabase` → `CanDatabase`
+  since `cantools` parses both DBC and ARXML into the identical
+  `Database` type, so a format-specific class name was never accurate.
+  New self-authored fixture (`fixtures/databases/vehicle_signals.arxml`)
+  covering a scaled signal, a negative-offset signal, and a 29-bit
+  extended arbitration ID — hand-authored AUTOSAR 4.x XML, since
+  `cantools` 42.0.3 has no ARXML *write* support to generate one from an
+  in-memory database (a real known-gap, documented alongside the others in
+  `docs/bus-02-arxml-known-gaps.md`, this loop's required "known-gap list"
+  deliverable per the plan's own risk-mitigation note). Proves the plan's
+  "dual specification strategy": BUS-01's DBC path stays fully functional
+  and first-class alongside the new ARXML path, not demoted by it.
 - **Malformed-response hardening for our own client stack** (DIAG-09; #35):
   13 new test cases (`tests/differential/test_client_hardening.py`,
   `tests/property/test_client_hardening_properties.py`) confirming

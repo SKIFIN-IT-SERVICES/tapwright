@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AUTOSAR xmlns="http://autosar.org/schema/r4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://autosar.org/schema/r4.0 AUTOSAR_4-2-2.xsd">
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>Cluster</SHORT-NAME>
+      <ELEMENTS>
+        <CAN-CLUSTER>
+          <SHORT-NAME>PowertrainCAN</SHORT-NAME>
+          <CAN-CLUSTER-VARIANTS>
+            <CAN-CLUSTER-CONDITIONAL>
+              <PHYSICAL-CHANNELS>
+                <CAN-PHYSICAL-CHANNEL>
+                  <SHORT-NAME>PowertrainCAN_Channel</SHORT-NAME>
+                  <FRAME-TRIGGERINGS>
+                    <CAN-FRAME-TRIGGERING>
+                      <SHORT-NAME>VehicleStatus_Triggering</SHORT-NAME>
+                      <IDENTIFIER>768</IDENTIFIER>
+                      <ADDRESSING-MODE>STANDARD</ADDRESSING-MODE>
+                      <FRAME-REF DEST="CAN-FRAME">/Frames/VehicleStatus</FRAME-REF>
+                      <FRAME-PORT-REFS/>
+                    </CAN-FRAME-TRIGGERING>
+                    <CAN-FRAME-TRIGGERING>
+                      <SHORT-NAME>ExtendedDiag_Triggering</SHORT-NAME>
+                      <IDENTIFIER>417001728</IDENTIFIER>
+                      <CAN-ADDRESSING-MODE>EXTENDED</CAN-ADDRESSING-MODE>
+                      <FRAME-REF DEST="CAN-FRAME">/Frames/ExtendedDiag</FRAME-REF>
+                      <FRAME-PORT-REFS/>
+                    </CAN-FRAME-TRIGGERING>
+                  </FRAME-TRIGGERINGS>
+                </CAN-PHYSICAL-CHANNEL>
+              </PHYSICAL-CHANNELS>
+            </CAN-CLUSTER-CONDITIONAL>
+          </CAN-CLUSTER-VARIANTS>
+        </CAN-CLUSTER>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>Frames</SHORT-NAME>
+      <ELEMENTS>
+        <CAN-FRAME>
+          <SHORT-NAME>VehicleStatus</SHORT-NAME>
+          <FRAME-LENGTH>8</FRAME-LENGTH>
+          <PDU-TO-FRAME-MAPPINGS>
+            <PDU-TO-FRAME-MAPPING>
+              <SHORT-NAME>VehicleStatus_PduMapping</SHORT-NAME>
+              <PACKING-BYTE-ORDER>MOST-SIGNIFICANT-BYTE-LAST</PACKING-BYTE-ORDER>
+              <START-POSITION>0</START-POSITION>
+              <PDU-REF DEST="I-SIGNAL-I-PDU">/Pdus/VehicleStatus_Pdu</PDU-REF>
+            </PDU-TO-FRAME-MAPPING>
+          </PDU-TO-FRAME-MAPPINGS>
+        </CAN-FRAME>
+        <CAN-FRAME>
+          <SHORT-NAME>ExtendedDiag</SHORT-NAME>
+          <FRAME-LENGTH>8</FRAME-LENGTH>
+          <PDU-TO-FRAME-MAPPINGS>
+            <PDU-TO-FRAME-MAPPING>
+              <SHORT-NAME>ExtendedDiag_PduMapping</SHORT-NAME>
+              <PACKING-BYTE-ORDER>MOST-SIGNIFICANT-BYTE-LAST</PACKING-BYTE-ORDER>
+              <START-POSITION>0</START-POSITION>
+              <PDU-REF DEST="I-SIGNAL-I-PDU">/Pdus/ExtendedDiag_Pdu</PDU-REF>
+            </PDU-TO-FRAME-MAPPING>
+          </PDU-TO-FRAME-MAPPINGS>
+        </CAN-FRAME>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>Pdus</SHORT-NAME>
+      <ELEMENTS>
+        <I-SIGNAL-I-PDU>
+          <SHORT-NAME>VehicleStatus_Pdu</SHORT-NAME>
+          <LENGTH>8</LENGTH>
+          <I-SIGNAL-TO-PDU-MAPPINGS>
+            <I-SIGNAL-TO-I-PDU-MAPPING>
+              <SHORT-NAME>Speed_Mapping</SHORT-NAME>
+              <PACKING-BYTE-ORDER>MOST-SIGNIFICANT-BYTE-LAST</PACKING-BYTE-ORDER>
+              <START-POSITION>0</START-POSITION>
+              <I-SIGNAL-REF DEST="I-SIGNAL">/Signals/Speed</I-SIGNAL-REF>
+            </I-SIGNAL-TO-I-PDU-MAPPING>
+            <I-SIGNAL-TO-I-PDU-MAPPING>
+              <SHORT-NAME>Odometer_Mapping</SHORT-NAME>
+              <PACKING-BYTE-ORDER>MOST-SIGNIFICANT-BYTE-LAST</PACKING-BYTE-ORDER>
+              <START-POSITION>8</START-POSITION>
+              <I-SIGNAL-REF DEST="I-SIGNAL">/Signals/Odometer</I-SIGNAL-REF>
+            </I-SIGNAL-TO-I-PDU-MAPPING>
+          </I-SIGNAL-TO-PDU-MAPPINGS>
+        </I-SIGNAL-I-PDU>
+        <I-SIGNAL-I-PDU>
+          <SHORT-NAME>ExtendedDiag_Pdu</SHORT-NAME>
+          <LENGTH>8</LENGTH>
+          <I-SIGNAL-TO-PDU-MAPPINGS>
+            <I-SIGNAL-TO-I-PDU-MAPPING>
+              <SHORT-NAME>DiagState_Mapping</SHORT-NAME>
+              <PACKING-BYTE-ORDER>MOST-SIGNIFICANT-BYTE-LAST</PACKING-BYTE-ORDER>
+              <START-POSITION>0</START-POSITION>
+              <I-SIGNAL-REF DEST="I-SIGNAL">/Signals/DiagState</I-SIGNAL-REF>
+            </I-SIGNAL-TO-I-PDU-MAPPING>
+          </I-SIGNAL-TO-PDU-MAPPINGS>
+        </I-SIGNAL-I-PDU>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>Signals</SHORT-NAME>
+      <ELEMENTS>
+        <I-SIGNAL>
+          <SHORT-NAME>Speed</SHORT-NAME>
+          <LENGTH>8</LENGTH>
+          <SYSTEM-SIGNAL-REF DEST="SYSTEM-SIGNAL">/SystemSignals/Speed_Signal</SYSTEM-SIGNAL-REF>
+        </I-SIGNAL>
+        <I-SIGNAL>
+          <SHORT-NAME>Odometer</SHORT-NAME>
+          <LENGTH>16</LENGTH>
+          <SYSTEM-SIGNAL-REF DEST="SYSTEM-SIGNAL">/SystemSignals/Odometer_Signal</SYSTEM-SIGNAL-REF>
+        </I-SIGNAL>
+        <I-SIGNAL>
+          <SHORT-NAME>DiagState</SHORT-NAME>
+          <LENGTH>8</LENGTH>
+          <SYSTEM-SIGNAL-REF DEST="SYSTEM-SIGNAL">/SystemSignals/DiagState_Signal</SYSTEM-SIGNAL-REF>
+        </I-SIGNAL>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>SystemSignals</SHORT-NAME>
+      <ELEMENTS>
+        <SYSTEM-SIGNAL>
+          <SHORT-NAME>Speed_Signal</SHORT-NAME>
+          <PHYSICAL-PROPS>
+            <SW-DATA-DEF-PROPS-VARIANTS>
+              <SW-DATA-DEF-PROPS-CONDITIONAL>
+                <COMPU-METHOD-REF DEST="COMPU-METHOD">/CompuMethods/Speed_CompuMethod</COMPU-METHOD-REF>
+                <DATA-CONSTR-REF DEST="DATA-CONSTR">/DataConstrs/Speed_DataConstr</DATA-CONSTR-REF>
+              </SW-DATA-DEF-PROPS-CONDITIONAL>
+            </SW-DATA-DEF-PROPS-VARIANTS>
+          </PHYSICAL-PROPS>
+        </SYSTEM-SIGNAL>
+        <SYSTEM-SIGNAL>
+          <SHORT-NAME>Odometer_Signal</SHORT-NAME>
+          <PHYSICAL-PROPS>
+            <SW-DATA-DEF-PROPS-VARIANTS>
+              <SW-DATA-DEF-PROPS-CONDITIONAL>
+                <COMPU-METHOD-REF DEST="COMPU-METHOD">/CompuMethods/Odometer_CompuMethod</COMPU-METHOD-REF>
+                <DATA-CONSTR-REF DEST="DATA-CONSTR">/DataConstrs/Odometer_DataConstr</DATA-CONSTR-REF>
+              </SW-DATA-DEF-PROPS-CONDITIONAL>
+            </SW-DATA-DEF-PROPS-VARIANTS>
+          </PHYSICAL-PROPS>
+        </SYSTEM-SIGNAL>
+        <SYSTEM-SIGNAL>
+          <SHORT-NAME>DiagState_Signal</SHORT-NAME>
+          <PHYSICAL-PROPS>
+            <SW-DATA-DEF-PROPS-VARIANTS>
+              <SW-DATA-DEF-PROPS-CONDITIONAL>
+                <COMPU-METHOD-REF DEST="COMPU-METHOD">/CompuMethods/DiagState_CompuMethod</COMPU-METHOD-REF>
+                <DATA-CONSTR-REF DEST="DATA-CONSTR">/DataConstrs/DiagState_DataConstr</DATA-CONSTR-REF>
+              </SW-DATA-DEF-PROPS-CONDITIONAL>
+            </SW-DATA-DEF-PROPS-VARIANTS>
+          </PHYSICAL-PROPS>
+        </SYSTEM-SIGNAL>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>CompuMethods</SHORT-NAME>
+      <ELEMENTS>
+        <COMPU-METHOD>
+          <SHORT-NAME>Speed_CompuMethod</SHORT-NAME>
+          <CATEGORY>LINEAR</CATEGORY>
+          <UNIT-REF DEST="UNIT">/Units/KmPerHour</UNIT-REF>
+          <COMPU-INTERNAL-TO-PHYS>
+            <COMPU-SCALES>
+              <COMPU-SCALE>
+                <COMPU-RATIONAL-COEFFS>
+                  <COMPU-NUMERATOR>
+                    <V>-40</V>
+                    <V>0.5</V>
+                  </COMPU-NUMERATOR>
+                  <COMPU-DENOMINATOR>
+                    <V>1</V>
+                  </COMPU-DENOMINATOR>
+                </COMPU-RATIONAL-COEFFS>
+              </COMPU-SCALE>
+            </COMPU-SCALES>
+          </COMPU-INTERNAL-TO-PHYS>
+        </COMPU-METHOD>
+        <COMPU-METHOD>
+          <SHORT-NAME>Odometer_CompuMethod</SHORT-NAME>
+          <CATEGORY>LINEAR</CATEGORY>
+          <UNIT-REF DEST="UNIT">/Units/Km</UNIT-REF>
+          <COMPU-INTERNAL-TO-PHYS>
+            <COMPU-SCALES>
+              <COMPU-SCALE>
+                <COMPU-RATIONAL-COEFFS>
+                  <COMPU-NUMERATOR>
+                    <V>0</V>
+                    <V>1</V>
+                  </COMPU-NUMERATOR>
+                  <COMPU-DENOMINATOR>
+                    <V>1</V>
+                  </COMPU-DENOMINATOR>
+                </COMPU-RATIONAL-COEFFS>
+              </COMPU-SCALE>
+            </COMPU-SCALES>
+          </COMPU-INTERNAL-TO-PHYS>
+        </COMPU-METHOD>
+        <COMPU-METHOD>
+          <SHORT-NAME>DiagState_CompuMethod</SHORT-NAME>
+          <CATEGORY>LINEAR</CATEGORY>
+          <COMPU-INTERNAL-TO-PHYS>
+            <COMPU-SCALES>
+              <COMPU-SCALE>
+                <COMPU-RATIONAL-COEFFS>
+                  <COMPU-NUMERATOR>
+                    <V>0</V>
+                    <V>1</V>
+                  </COMPU-NUMERATOR>
+                  <COMPU-DENOMINATOR>
+                    <V>1</V>
+                  </COMPU-DENOMINATOR>
+                </COMPU-RATIONAL-COEFFS>
+              </COMPU-SCALE>
+            </COMPU-SCALES>
+          </COMPU-INTERNAL-TO-PHYS>
+        </COMPU-METHOD>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>DataConstrs</SHORT-NAME>
+      <ELEMENTS>
+        <DATA-CONSTR>
+          <SHORT-NAME>Speed_DataConstr</SHORT-NAME>
+          <DATA-CONSTR-RULES>
+            <DATA-CONSTR-RULE>
+              <INTERNAL-CONSTRS>
+                <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
+              </INTERNAL-CONSTRS>
+            </DATA-CONSTR-RULE>
+          </DATA-CONSTR-RULES>
+        </DATA-CONSTR>
+        <DATA-CONSTR>
+          <SHORT-NAME>Odometer_DataConstr</SHORT-NAME>
+          <DATA-CONSTR-RULES>
+            <DATA-CONSTR-RULE>
+              <INTERNAL-CONSTRS>
+                <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                <UPPER-LIMIT INTERVAL-TYPE="CLOSED">65535</UPPER-LIMIT>
+              </INTERNAL-CONSTRS>
+            </DATA-CONSTR-RULE>
+          </DATA-CONSTR-RULES>
+        </DATA-CONSTR>
+        <DATA-CONSTR>
+          <SHORT-NAME>DiagState_DataConstr</SHORT-NAME>
+          <DATA-CONSTR-RULES>
+            <DATA-CONSTR-RULE>
+              <INTERNAL-CONSTRS>
+                <LOWER-LIMIT INTERVAL-TYPE="CLOSED">0</LOWER-LIMIT>
+                <UPPER-LIMIT INTERVAL-TYPE="CLOSED">255</UPPER-LIMIT>
+              </INTERNAL-CONSTRS>
+            </DATA-CONSTR-RULE>
+          </DATA-CONSTR-RULES>
+        </DATA-CONSTR>
+      </ELEMENTS>
+    </AR-PACKAGE>
+
+    <AR-PACKAGE>
+      <SHORT-NAME>Units</SHORT-NAME>
+      <ELEMENTS>
+        <UNIT>
+          <SHORT-NAME>KmPerHour</SHORT-NAME>
+          <DISPLAY-NAME>km/h</DISPLAY-NAME>
+        </UNIT>
+        <UNIT>
+          <SHORT-NAME>Km</SHORT-NAME>
+          <DISPLAY-NAME>km</DISPLAY-NAME>
+        </UNIT>
+      </ELEMENTS>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+</AUTOSAR>

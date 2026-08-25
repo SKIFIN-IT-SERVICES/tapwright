@@ -1,13 +1,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""DBC ingestion + symbolic decode via `cantools` (BUS-01, `TOOL-REQ-014`).
+"""DBC + ARXML ingestion and symbolic decode via `cantools` (BUS-01
+`TOOL-REQ-014`; BUS-02 `TOOL-REQ-015`).
 
 Per `AGENTS.md`'s reuse rule (`cantools`: MIT — "reuse; contribute upstream
 fixes... rather than forking"), this wraps `cantools.database.load_file()`'s
-`Database` rather than reimplementing DBC parsing. The only thing this
+`Database` rather than reimplementing DBC/ARXML parsing. The only thing this
 module adds is bridging decode/encode to `tapwright.hal.Frame`, so a caller
 never has to hand-assemble the frame-id/data-bytes/extended-id triple
 `cantools`'s own API expects separately.
+
+`CanDatabase` is deliberately format-agnostic (named after `cantools`' own
+`cantools.database.can.database.Database`, not after either input format):
+DBC and ARXML both parse into that identical type — nothing format-specific
+survives `load_file()` — so `load_dbc()` and `load_arxml()` are two named,
+format-specific entry points sharing one wrapper class, not two parallel
+implementations. Per the plan's own "dual specification strategy" (BUS-02),
+DBC stays a first-class input alongside ARXML, not a fallback to it.
 """
 
 from __future__ import annotations
@@ -17,19 +26,22 @@ from typing import Any
 
 import cantools
 import cantools.database
+import cantools.errors
 
 from tapwright.hal import Frame
 
 from .errors import DatabaseLoadError, UnknownMessageError
 
 
-class DbcDatabase:
-    """A loaded DBC database, decoding/encoding against `hal.Frame` rather
-    than cantools' own separate frame-id/data/extended-id arguments.
+class CanDatabase:
+    """A loaded CAN database (from either a DBC or an ARXML source —
+    `cantools` parses both into this same type), decoding/encoding against
+    `hal.Frame` rather than cantools' own separate frame-id/data/extended-id
+    arguments.
 
-    Always constructed via `load_dbc()` — never directly — so a missing or
-    invalid file raises `DatabaseLoadError` before any partially-loaded
-    state exists.
+    Always constructed via `load_dbc()`/`load_arxml()` — never directly —
+    so a missing, invalid, or wrong-format file raises `DatabaseLoadError`
+    before any partially-loaded state exists.
     """
 
     def __init__(self, db: cantools.database.can.database.Database) -> None:
@@ -82,20 +94,42 @@ class DbcDatabase:
         )
 
 
-def load_dbc(path: str | Path) -> DbcDatabase:
-    """Load a DBC file. Config/file-existence errors are caught and raised
-    as `DatabaseLoadError` before any partially-loaded state exists, per
-    the same "validate before touching a resource" discipline `hal.open_bus`
-    already established.
+def _load(path: str | Path, database_format: str) -> CanDatabase:
+    """Shared load path for `load_dbc()`/`load_arxml()`. `database_format`
+    is passed through explicitly (rather than left to `cantools`' own
+    extension-based auto-detection) so each function is a genuine,
+    format-specific entry point: handing `load_arxml()` a `.dbc` file
+    fails clearly instead of `cantools` silently parsing it as whatever its
+    extension implied.
     """
     try:
-        db = cantools.database.load_file(path)
-    except (FileNotFoundError, OSError) as exc:
-        raise DatabaseLoadError(f"could not load DBC file {path!r}: {exc}") from exc
+        db = cantools.database.load_file(path, database_format=database_format)
+    except (FileNotFoundError, OSError, cantools.errors.Error) as exc:
+        raise DatabaseLoadError(
+            f"could not load {database_format.upper()} file {path!r}: {exc}"
+        ) from exc
 
     if not isinstance(db, cantools.database.can.database.Database):
         raise DatabaseLoadError(
             f"{path!r} did not load as a CAN database (got {type(db).__name__})"
         )
 
-    return DbcDatabase(db)
+    return CanDatabase(db)
+
+
+def load_dbc(path: str | Path) -> CanDatabase:
+    """Load a DBC file. Config/file-existence errors are caught and raised
+    as `DatabaseLoadError` before any partially-loaded state exists, per
+    the same "validate before touching a resource" discipline `hal.open_bus`
+    already established.
+    """
+    return _load(path, "dbc")
+
+
+def load_arxml(path: str | Path) -> CanDatabase:
+    """Load an ARXML file (Classic or Adaptive AUTOSAR communication
+    matrix) — `TOOL-REQ-015`. Same validate-before-touching discipline as
+    `load_dbc()`; see `docs/bus-02-arxml-known-gaps.md` for what `cantools`'
+    own ARXML depth does and doesn't cover.
+    """
+    return _load(path, "arxml")
