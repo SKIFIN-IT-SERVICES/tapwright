@@ -8,6 +8,16 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **HTML report** (RUN-03, `TOOL-REQ-031`; #39): a self-contained,
+  auto-generated HTML report (pass/fail, timing) after every test run —
+  wraps `pytest-html` (new dependency, MPL-2.0) rather than reimplementing
+  report rendering; `tapwright.runner.plugin` sets a default `--html` path
+  only if the user hasn't already chosen one, so a report appears with
+  zero required flags, matching TOOL-REQ-031's "without additional
+  configuration" wording literally. "Decoded frames" isn't in the report
+  yet — no mechanism anywhere in the codebase records which frames a test
+  exchanged for a report to read back, flagged as a real follow-up rather
+  than silently dropped.
 - **ARXML ingestion + symbolic decode via `cantools`** (BUS-02,
   `TOOL-REQ-015`; #37): `tapwright.dbc_arxml.load_arxml()`, sharing
   `load_dbc()`'s wrapper class — renamed `DbcDatabase` → `CanDatabase`

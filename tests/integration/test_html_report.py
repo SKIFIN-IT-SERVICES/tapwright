@@ -49,10 +49,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #39)")
-
 PASSING_TEST = "def test_ok():\n    assert True\n"
 FAILING_TEST = "def test_not_ok():\n    assert False\n"
 MIXED_SUITE = (
@@ -81,7 +77,6 @@ def run_pytest(*args: str, cwd: Path) -> subprocess.CompletedProcess:
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_report_auto_generates_with_no_explicit_flag(tmp_path):
     """The literal "without additional configuration" requirement: no
     `--html=...` flag passed, a report still appears.
@@ -94,7 +89,6 @@ def test_report_auto_generates_with_no_explicit_flag(tmp_path):
     assert len(reports) == 1
 
 
-@SKIP
 def test_report_contains_every_result(tmp_path):
     (tmp_path / "test_sample.py").write_text(MIXED_SUITE)
 
@@ -111,7 +105,6 @@ def test_report_contains_every_result(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_explicit_html_flag_is_not_overridden(tmp_path):
     """A user who already knows what they're doing and passes their own
     `--html=` path keeps it -- the auto-default only fills a gap, it
@@ -123,35 +116,43 @@ def test_explicit_html_flag_is_not_overridden(tmp_path):
     run_pytest("test_sample.py", f"--html={custom_path}", cwd=tmp_path)
 
     assert custom_path.exists()
-    assert not any(
-        p.name != "custom_report.html" for p in tmp_path.glob("*.html")
-    )
+    assert not any(p.name != "custom_report.html" for p in tmp_path.glob("*.html"))
 
 
-@SKIP
 def test_repeated_runs_produce_the_same_results_table(tmp_path):
     """The testable half of "deterministic": the same suite run twice
-    produces the same set of results, same order, same outcomes -- not
-    byte-identical files (see module docstring for why that's out of
-    scope: the default template embeds a generation timestamp).
+    produces the same set of results, same order, same outcomes.
+
+    Not byte-identical files -- confirmed directly while writing this
+    test: `pytest-html`'s report embeds a generation timestamp *and* a
+    wall-clock duration per test and for the whole run, both of which
+    legitimately vary run to run (duration is required content --
+    `TOOL-REQ-031` names "timing" as part of the report -- so this isn't a
+    gap to close, it's an inherent property of a report that includes
+    timing at all). What's extracted and compared instead is just
+    `(testId, result)` pairs, in order -- the part that would actually
+    catch a real bug, e.g. a race in how results get collected or reported
+    out of order.
     """
-    (tmp_path / "test_sample.py").write_text(MIXED_SUITE)
+    run1_dir = tmp_path / "run1"
+    run2_dir = tmp_path / "run2"
+    run1_dir.mkdir()
+    run2_dir.mkdir()
+    (run1_dir / "test_sample.py").write_text(MIXED_SUITE)
+    (run2_dir / "test_sample.py").write_text(MIXED_SUITE)
 
-    run_pytest("test_sample.py", "--html=r1.html", cwd=tmp_path)
-    run_pytest("test_sample.py", "--html=r2.html", cwd=tmp_path)
+    run_pytest("test_sample.py", "--html=report.html", cwd=run1_dir)
+    run_pytest("test_sample.py", "--html=report.html", cwd=run2_dir)
 
-    def results_only(report_path: Path) -> str:
-        # Strip anything timestamp-shaped so this compares the meaningful
-        # content, not the one deliberately-excluded piece of non-determinism.
+    def outcomes(report_path: Path) -> list[tuple[str, str]]:
         import re
 
         text = report_path.read_text(encoding="utf-8")
-        return re.sub(r"Report generated on .*? by", "", text)
+        return re.findall(r'"result":\s*"([^"]+)",\s*"testId":\s*"([^"]+)"', text)
 
-    assert results_only(tmp_path / "r1.html") == results_only(tmp_path / "r2.html")
+    assert outcomes(run1_dir / "report.html") == outcomes(run2_dir / "report.html")
 
 
-@SKIP
 def test_empty_suite_still_produces_a_valid_report(tmp_path):
     run_pytest(cwd=tmp_path)  # empty directory, nothing to collect
 
@@ -165,7 +166,6 @@ def test_empty_suite_still_produces_a_valid_report(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_failed_test_is_clearly_marked_failed_in_the_report(tmp_path):
     (tmp_path / "test_sample.py").write_text(FAILING_TEST)
 
@@ -176,7 +176,6 @@ def test_failed_test_is_clearly_marked_failed_in_the_report(tmp_path):
     assert "failed" in report.lower()
 
 
-@SKIP
 def test_skipped_test_still_appears_not_silently_dropped(tmp_path):
     (tmp_path / "test_sample.py").write_text(MIXED_SUITE)
 
