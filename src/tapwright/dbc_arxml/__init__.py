@@ -7,21 +7,24 @@ AUTOSAR) communication matrices, LDF for LIN, and A2L (ASAM MCD-2 MC) for
 measurement/calibration variable descriptions. See ARCHITECTURE.md at the
 repository root.
 
-Implemented so far: `database.py` (BUS-01, `TOOL-REQ-014`) — `load_dbc()` +
-`DbcDatabase`, decoding/encoding against `tapwright.hal.Frame` directly.
-ARXML (`TOOL-REQ-015`), LDF (`TOOL-REQ-016`), and A2L (`TOOL-REQ-017`) are
-not yet built (BUS-02 through BUS-04).
+Implemented so far: `database.py` — `load_dbc()` (BUS-01, `TOOL-REQ-014`)
+and `load_arxml()` (BUS-02, `TOOL-REQ-015`), both returning `CanDatabase`
+(one format-agnostic wrapper — `cantools` parses either source into the
+same underlying type), decoding/encoding against `tapwright.hal.Frame`
+directly. LDF (`TOOL-REQ-016`) and A2L (`TOOL-REQ-017`) are not yet built
+(BUS-03/BUS-04).
 """
 
 from __future__ import annotations
 
-from .database import DbcDatabase, load_dbc
+from .database import CanDatabase, load_arxml, load_dbc
 from .errors import DatabaseLoadError, DbcArxmlError, UnknownMessageError
 
 __all__ = [
+    "CanDatabase",
     "DatabaseLoadError",
     "DbcArxmlError",
-    "DbcDatabase",
     "UnknownMessageError",
+    "load_arxml",
     "load_dbc",
 ]

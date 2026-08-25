@@ -1,0 +1,12 @@
+{
+  "database": "databases/vehicle_signals.arxml",
+  "message": "VehicleStatus",
+  "frame_id": 768,
+  "is_extended_id": false,
+  "data_hex": "82d2040000000000",
+  "decoded": {
+    "Speed": 25.0,
+    "Odometer": 1234
+  },
+  "notes": "Speed raw=130 (0x82) * scale 0.5 + offset -40 = 25.0 km/h -- exercises a negative-offset LINEAR COMPU-METHOD. Odometer raw=1234 (0x04D2 little-endian), scale 1, offset 0. Decoded by cantools 42.0.3 directly against the self-authored ARXML; hand-verified against the ARXML's own COMPU-RATIONAL-COEFFS."
+}

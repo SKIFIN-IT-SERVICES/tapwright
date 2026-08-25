@@ -21,8 +21,11 @@ not just a merge.
 
 ## Oracle
 
-Every decode/encode case runs through both `tapwright.dbc_arxml.DbcDatabase`
-and `cantools.database.load_file()` (the same file) used directly, asserting
+Every decode/encode case runs through both `tapwright.dbc_arxml.CanDatabase`
+(via `load_dbc()`; renamed from `DbcDatabase` in BUS-02 — `cantools` parses
+DBC and ARXML into the identical underlying type, so the wrapper class was
+never actually DBC-specific) and `cantools.database.load_file()` (the same
+file) used directly, asserting
 identical results — the differential half. The golden `fixtures/expected/*`
 values are the property-test-independent, human-reviewable anchor — the
 "golden expected outputs" half BUS-01's own backlog line names alongside
@@ -45,7 +48,7 @@ from pathlib import Path
 import cantools
 import pytest
 
-from tapwright.dbc_arxml import DbcDatabase, UnknownMessageError, load_dbc
+from tapwright.dbc_arxml import CanDatabase, UnknownMessageError, load_dbc
 from tapwright.dbc_arxml.errors import DatabaseLoadError
 from tapwright.hal import Frame
 
@@ -63,7 +66,7 @@ def oracle_database() -> cantools.database.can.database.Database:
     return cantools.database.load_file(DBC_PATH)
 
 
-def our_database() -> DbcDatabase:
+def our_database() -> CanDatabase:
     return load_dbc(DBC_PATH)
 
 

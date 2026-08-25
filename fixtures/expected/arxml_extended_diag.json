@@ -1,0 +1,11 @@
+{
+  "database": "databases/vehicle_signals.arxml",
+  "message": "ExtendedDiag",
+  "frame_id": 417001728,
+  "is_extended_id": true,
+  "data_hex": "0700000000000000",
+  "decoded": {
+    "DiagState": 7
+  },
+  "notes": "frame_id 417001728 (0x18DAF100) exercises a 29-bit extended CAN identifier, ARXML-sourced (CAN-ADDRESSING-MODE=EXTENDED on the CAN-FRAME-TRIGGERING). DiagState raw=7, scale 1, offset 0. Decoded by cantools 42.0.3 directly against the self-authored ARXML."
+}
