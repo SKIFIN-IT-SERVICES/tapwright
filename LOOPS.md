@@ -20,11 +20,11 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**19 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
+**20 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
 partials, 🔵 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-05,
-RUN-08, BUS-01/02. Roughly 51% of the loop count — see each section's
-table below for per-loop detail; this line replaces the former
+INF-01–05, HAL-01/02/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
+RUN-05, RUN-08, BUS-01/02. Roughly 54% of the loop count — see each
+section's table below for per-loop detail; this line replaces the former
 per-milestone rollup table, which drifted out of sync with the per-loop
 tables (a second tracking surface saying something different from the
 first is worse than one surface, even an imperfect one) and didn't map
@@ -39,9 +39,9 @@ complete, transport-agnostic UDS-over-CAN-and-DoIP client, **the
 process-boundary interception point** `docs/architecture.md` §4 requires,
 **and confirmed malformed-response hardening**, with ODX and SOVD loops
 still ahead. L3 (RUN) now has its
-fixture layer, a named CLI entry point, a container image build, **and an
-HTML report**, with the declarative-YAML and JSON-report loops still
-ahead. **L1 (BUS) now has
+fixture layer, a named CLI entry point, a container image build, **and
+both HTML and JSON reports**, with the declarative-YAML loop still ahead.
+**L1 (BUS) now has
 DBC and ARXML decode both first-class**, with trace I/O and restbus still
 ahead of it.
 
@@ -275,7 +275,7 @@ ahead of it.
 | RUN-01 | pytest plugin: `bus`, `uds_client`, `virtual_ecu` fixtures | D+I | T2 | 6 | Must | 🔵 |
 | RUN-02 | Declarative YAML test format → pytest collection | P | T3 | 8 | Should | 🔴 |
 | RUN-03 | HTML report | W | T2 | 4 | Must | 🔵 |
-| RUN-04 | JSON / ATX-style machine-readable report | W | T2 | 4 | Must | 🔴 |
+| RUN-04 | JSON / ATX-style machine-readable report | W | T2 | 4 | Should | 🔵 |
 | RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔵 |
 | RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔴 |
 | RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔴 |
@@ -308,6 +308,24 @@ ahead of it.
 > per-test wall-clock duration, both legitimate variance for a report
 > that's required to include timing at all (`TOOL-REQ-031` names it). All
 > 10 CI jobs green.
+
+> **RUN-04** (#41, PR #42): wraps `pytest-json-report` (MIT, new
+> dependency), extending RUN-03's own `pytest_configure` hook rather than
+> adding a second one. **Priority corrected to Should** — the plan's loop
+> table (row above, and the plan document itself) says Must, but
+> `TOOL-REQ-032`'s own row in `docs/tooling-requirements.md` rates itself
+> Should; per this project's own convention (inherit from the cited
+> requirement's rating), LOOPS.md's own status column now reflects that
+> correction rather than the plan's stale value — see this file's own
+> header ("when they disagree... this file is right"). **"Schema-
+> validates" is against `docs/schemas/run-report.schema.json`, a schema
+> this loop defines**, not the ASAM ATX standard the plan's own title for
+> this loop names — `TOOL-REQ-032`'s own wording ("not built now, just
+> don't block it") rules that out for now. A real design gap found via
+> TDD: `pytest-json-report` splits "enabled" from "where" into two
+> separate options, unlike `pytest-html`'s single option — naively
+> checking only the boolean would have overwritten an explicitly-chosen
+> file path with the auto-default.
 
 > **RUN-05** (#31, PR #32): `tapwright.runner.cli.main()` is a thin
 > pass-through to `pytest.main()`, registered as both an installed console
