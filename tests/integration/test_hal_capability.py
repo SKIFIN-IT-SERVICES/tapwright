@@ -39,8 +39,6 @@ import pytest
 from tapwright.hal import Frame, open_bus
 from tapwright.hal.errors import CapabilityError
 
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #43)")
-
 pytestmark = pytest.mark.requires_vcan
 
 
@@ -49,7 +47,6 @@ pytestmark = pytest.mark.requires_vcan
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 @pytest.mark.parametrize(
     ("bus_fd", "frame_fd", "should_raise"),
     [
@@ -79,9 +76,8 @@ def test_capability_matrix_across_bus_and_frame_fd_combinations(
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_capability_error_message_names_the_mismatch(vcan_channel):
-    """"Clear error" means a human reading it understands what went
+    """ "Clear error" means a human reading it understands what went
     wrong -- not just that *something* raised.
     """
     bus = open_bus(backend="socketcan", channel=vcan_channel, fd=False)
@@ -94,9 +90,8 @@ def test_capability_error_message_names_the_mismatch(vcan_channel):
         bus.shutdown()
 
 
-@SKIP
 def test_capability_mismatch_does_not_corrupt_bus_state(vcan_channel):
-    """"Never a silent failure" extends to "never corrupts state either" --
+    """ "Never a silent failure" extends to "never corrupts state either" --
     a rejected send must not leave the bus unusable for a subsequent valid
     operation.
     """
@@ -116,7 +111,6 @@ def test_capability_mismatch_does_not_corrupt_bus_state(vcan_channel):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_rejected_fd_frame_is_never_silently_sent(vcan_channel):
     """The literal "never a silent failure" requirement, proven rather
     than assumed: a second, independent bus handle confirms nothing
