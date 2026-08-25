@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/SKIFIN-IT-SERVICES/tapwright/docs/schemas/run-report.schema.json",
+  "title": "Tapwright test run report (RUN-04, TOOL-REQ-032)",
+  "description": "The contract tapwright's JSON report promises a results-warehouse consumer -- deliberately a subset of whatever the underlying pytest-json-report plugin happens to emit, not a full mirror of it, so this schema (and this loop's own claim of 'schema-validates') stays true even if the wrapped library adds fields later.",
+  "type": "object",
+  "required": ["summary", "tests"],
+  "properties": {
+    "summary": {
+      "type": "object",
+      "description": "Per-outcome counts for the run.",
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["total"]
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["nodeid", "outcome"],
+        "properties": {
+          "nodeid": {
+            "type": "string",
+            "description": "The pytest node ID, e.g. 'tests/test_x.py::test_y'."
+          },
+          "outcome": {
+            "type": "string",
+            "enum": ["passed", "failed", "skipped", "error"]
+          }
+        }
+      }
+    }
+  }
+}
