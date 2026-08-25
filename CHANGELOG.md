@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Capability-mismatch property test** (HAL-07, `TOOL-REQ-009`; #43): 7
+  new test cases (`tests/integration/test_hal_capability.py`) confirming
+  `Bus.send()` raises a clear `CapabilityError` — never a silent failure
+  or a raw traceback — for every combination of bus/frame CAN-FD
+  capability, with an actionable message and no corruption of bus state
+  for a subsequent valid send. No implementation changes were needed —
+  the capability check already existed and was already correct; this loop
+  is the verification that proves it, closing a real gap (no test file
+  anywhere previously referenced `CapabilityError`). Uses a parametrized
+  sweep rather than `hypothesis`: the `(bus_fd, frame_fd)` state space is
+  2 booleans, already fully enumerable.
 - **JSON machine-readable report** (RUN-04, `TOOL-REQ-032`; #41): an
   auto-generated JSON report after every test run — wraps
   `pytest-json-report` (new dependency, MIT) via the same
