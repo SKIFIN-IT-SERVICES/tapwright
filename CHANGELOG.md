@@ -8,6 +8,22 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **BLF + ASC trace read/write** (BUS-05, `TOOL-REQ-019`/`TOOL-REQ-020`;
+  #45): `tapwright.trace.write_blf()`/`read_blf()` and
+  `write_asc()`/`read_asc()`, wrapping `python-can`'s own
+  `BLFReader`/`BLFWriter`/`ASCReader`/`ASCWriter` (already a required
+  dependency) rather than reimplementing either format. `hal.Frame` gains
+  a `timestamp` field (default `0.0`, fully backward compatible) — BLF/ASC
+  are fundamentally timestamped formats, and `Frame` had no timing field
+  at all before this loop. `read_asc()` hardens against a real gap found
+  directly while implementing this: `python-can`'s own `ASCReader`
+  silently returns zero frames for a file that isn't a valid ASC trace at
+  all, rather than raising — `read_asc()` now checks for the header line
+  `ASCWriter` always writes first, raising `TraceLoadError` instead.
+  **Known gap**: no real Vector-CANoe-exported file is available in this
+  environment, so true CANoe interop is unverified — only round-tripping
+  through `python-can`'s own implementation is tested (both directions:
+  what we write, `python-can`'s own reader also reads, and vice versa).
 - **Capability-mismatch property test** (HAL-07, `TOOL-REQ-009`; #43): 7
   new test cases (`tests/integration/test_hal_capability.py`) confirming
   `Bus.send()` raises a clear `CapabilityError` — never a silent failure
