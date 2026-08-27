@@ -60,8 +60,6 @@ import pytest
 from tapwright.hal import Frame
 from tapwright.trace import TraceLoadError, read_asc, read_blf, write_asc, write_blf
 
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #45)")
-
 FRAMES = [
     Frame(arbitration_id=0x123, data=b"\x01\x02\x03", is_extended_id=False),
     Frame(arbitration_id=0x1ABCDEF0, data=b"\xff" * 8, is_extended_id=True),
@@ -73,7 +71,6 @@ FRAMES = [
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_blf_round_trips_through_our_own_writer_and_reader(tmp_path):
     path = tmp_path / "trace.blf"
     write_blf(FRAMES, path)
@@ -84,7 +81,6 @@ def test_blf_round_trips_through_our_own_writer_and_reader(tmp_path):
     ]
 
 
-@SKIP
 def test_asc_round_trips_through_our_own_writer_and_reader(tmp_path):
     path = tmp_path / "trace.asc"
     write_asc(FRAMES, path)
@@ -95,7 +91,6 @@ def test_asc_round_trips_through_our_own_writer_and_reader(tmp_path):
     ]
 
 
-@SKIP
 def test_blf_written_by_us_reads_correctly_via_python_can_directly(tmp_path):
     """The differential half: what we write, `python-can`'s own reader
     (not ours) also reads correctly -- proves our writer produces a
@@ -113,7 +108,6 @@ def test_blf_written_by_us_reads_correctly_via_python_can_directly(tmp_path):
     ]
 
 
-@SKIP
 def test_asc_written_by_python_can_directly_reads_correctly_via_us(tmp_path):
     """The other differential half: a file `python-can` itself produced
     (not ours) reads correctly through our own reader.
@@ -140,7 +134,6 @@ def test_asc_written_by_python_can_directly_reads_correctly_via_us(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 @pytest.mark.parametrize(
     ("write_fn", "read_fn", "ext"),
     [(write_blf, read_blf, "blf"), (write_asc, read_asc, "asc")],
@@ -156,7 +149,6 @@ def test_can_fd_frame_round_trips(tmp_path, write_fn, read_fn, ext):
     assert result.data == fd_frame.data
 
 
-@SKIP
 @pytest.mark.parametrize(
     ("write_fn", "read_fn", "ext"),
     [(write_blf, read_blf, "blf"), (write_asc, read_asc, "asc")],
@@ -167,7 +159,6 @@ def test_empty_trace_round_trips_to_zero_frames_not_a_crash(tmp_path, write_fn, 
     assert read_fn(path) == []
 
 
-@SKIP
 @pytest.mark.parametrize(
     ("write_fn", "read_fn", "ext"),
     [(write_blf, read_blf, "blf"), (write_asc, read_asc, "asc")],
@@ -192,14 +183,12 @@ def test_relative_timing_between_frames_is_preserved(tmp_path, write_fn, read_fn
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 @pytest.mark.parametrize("read_fn", [read_blf, read_asc])
 def test_reading_a_missing_file_raises_clear_error(tmp_path, read_fn):
     with pytest.raises(TraceLoadError):
         read_fn(tmp_path / "does_not_exist")
 
 
-@SKIP
 @pytest.mark.parametrize("read_fn,ext", [(read_blf, "blf"), (read_asc, "asc")])
 def test_reading_a_corrupted_file_raises_clear_error_not_a_crash(tmp_path, read_fn, ext):
     path = tmp_path / f"garbage.{ext}"
