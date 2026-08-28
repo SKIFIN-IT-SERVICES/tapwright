@@ -20,10 +20,10 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**21 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; three
+**22 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
 partials, 🔵 with a note, count as "landed but not formally signed off"):
 INF-01–05, HAL-01/02/07/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-08, BUS-01/02. Roughly 57% of the loop count — see each
+RUN-05, RUN-08, BUS-01/02/05. Roughly 59% of the loop count — see each
 section's table below for per-loop detail; this line replaces the former
 per-milestone rollup table, which drifted out of sync with the per-loop
 tables (a second tracking surface saying something different from the
@@ -42,8 +42,8 @@ still ahead. L3 (RUN) now has its
 fixture layer, a named CLI entry point, a container image build, **and
 both HTML and JSON reports**, with the declarative-YAML loop still ahead.
 **L1 (BUS) now has
-DBC and ARXML decode both first-class**, with trace I/O and restbus still
-ahead of it.
+DBC and ARXML decode both first-class, plus BLF/ASC trace I/O**, with
+restbus still ahead of it.
 
 ---
 
@@ -131,7 +131,7 @@ ahead of it.
 | BUS-02 | ARXML load + decode; dual-specification path (lightweight input first-class) | W | T4 | 7 | Must | 🔵 |
 | BUS-03 | LDF (LIN) database support | W | T3 | 4 | Should | 🔴 |
 | BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | 🔴 |
-| BUS-05 | Trace I/O: BLF + ASC read/write | W | T4 | 6 | Must | 🔴 |
+| BUS-05 | Trace I/O: BLF + ASC read/write | W | T4 | 6 | Must | 🔵 with a note |
 | BUS-06 | MDF4 via `asammdf`, optional extra + LGPL isolation | W | T3 | 5 | Should | 🔴 |
 | BUS-07 | Restbus / cyclic-send engine, multi-node, DBC-driven cycle times | P | T4 | 8 | Must | 🔴 |
 | BUS-08 | Signal-level subscribe/filter API over live traffic | I | T2 | 5 | Should | 🔴 |
@@ -172,6 +172,24 @@ ahead of it.
 > exercised. **Dual-specification path proven, not just asserted** —
 > `test_dbc_path_remains_fully_functional_alongside_arxml` loads BUS-01's
 > DBC and this loop's ARXML in the same session. All 10 CI jobs green.
+
+> **BUS-05** (#45, PR #46): `tapwright.trace.write_blf()`/`read_blf()` and
+> `write_asc()`/`read_asc()` wrap `python-can`'s own
+> `BLFReader`/`BLFWriter`/`ASCReader`/`ASCWriter` (already a required
+> dependency) rather than reimplementing either format. `hal.Frame` gains
+> a `timestamp` field (default `0.0`, backward compatible — all 12
+> existing `Frame(...)` call sites unaffected) — BLF/ASC are fundamentally
+> timestamped formats and `Frame` had none before this loop;
+> `Bus.send()`/`recv()` deliberately untouched. **A real hardening fix
+> found while implementing**: `python-can`'s own `ASCReader` silently
+> returns zero frames for a file that isn't a valid ASC trace at all,
+> rather than raising — confirmed directly. `read_asc()` now checks for
+> the header line `ASCWriter` always writes first, raising
+> `TraceLoadError` instead. **Marked "with a note"**: no real
+> Vector-CANoe-exported file is available in this environment, so true
+> CANoe interop (`TOOL-REQ-019`/`020`'s own literal wording) is
+> unverified — only round-tripping through `python-can`'s own
+> implementation is tested, in both directions. All 10 CI jobs green.
 
 ## DIAG — L2 Diagnostics Engine (`src/tapwright/diag/`)
 
