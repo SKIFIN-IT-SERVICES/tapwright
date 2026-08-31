@@ -1,0 +1,3 @@
+# Not on PyPI yet -- installs from the git repository directly. Once
+# published, this becomes: tapwright
+git+https://github.com/SKIFIN-IT-SERVICES/tapwright.git@main
