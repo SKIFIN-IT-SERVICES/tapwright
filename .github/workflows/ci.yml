@@ -143,6 +143,25 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: pytest tests/integration/test_container.py -v
 
+  example-github-actions:
+    name: Example — GitHub Actions (RUN-06)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - uses: ./.github/actions/bring-up-vcan
+      # Installs *this checkout's* tapwright, not
+      # examples/github-actions/requirements.txt's own `@main` pin (that
+      # pin is for real external consumers) -- proves the example's own
+      # test works against the current branch, not a stale published one.
+      - run: pip install .
+      - run: pytest examples/github-actions/test_vin_read.py -v
+        env:
+          TAPWRIGHT_CHANNEL: vcan0
+
   coverage-ratchet:
     name: Coverage ratchet (L0-L2)
     runs-on: ubuntu-latest

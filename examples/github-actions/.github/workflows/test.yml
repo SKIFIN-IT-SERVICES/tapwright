@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# RUN-06 (TOOL-REQ-033): the copy-pasteable workflow a tapwright consumer
+# actually uses -- 1 job, 5 steps, a stock ubuntu-latest runner, zero
+# licensed/proprietary tooling. Compare with vectorgrp/ci-siltest-demo's
+# own public CI reference (4 jobs, self-hosted runners requiring DaVinci
+# Configurator + vVIRTUALtarget + CANoe4SW Server Edition licensed and
+# pre-installed) -- see docs/run-06-benchmark.md for the full comparison.
+#
+# To use this in your own repo: copy this file to
+# .github/workflows/test.yml and adjust the checkout/install steps for
+# your own project layout. The bring-up-vcan step below is tapwright's
+# own reusable composite action, referenced cross-repo -- you don't need
+# to copy vcan setup logic into your own repo at all.
+
+name: UDS tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: UDS test suite (virtual ECU, zero hardware)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # tapwright's own reusable composite action -- no vcan setup logic
+      # needs to be copied into your own repo.
+      - uses: SKIFIN-IT-SERVICES/tapwright/.github/actions/bring-up-vcan@main
+
+      - run: pip install -r requirements.txt
+
+      - run: pytest
+        env:
+          TAPWRIGHT_CHANNEL: vcan0

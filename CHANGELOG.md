@@ -8,6 +8,20 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Cold-clone GitHub Actions example** (RUN-06, `TOOL-REQ-033`; #47):
+  `examples/github-actions/` — a standalone, cold-clone-able example of
+  testing UDS diagnostics with `tapwright` in CI (one small test using
+  RUN-01's own `uds` pytest fixture, a copy-pasteable
+  `.github/workflows/test.yml` reusing `tapwright`'s own `bring-up-vcan`
+  composite action cross-repo). A new CI job in this repo
+  (`Example — GitHub Actions (RUN-06)`) runs the example's own test
+  against the current source on every push, so "goes green from a cold
+  clone" is demonstrated by CI itself. `docs/run-06-benchmark.md` records
+  the plan's own required benchmark against `vectorgrp/ci-siltest-demo`
+  (Vector's public CI reference): their pipeline needs self-hosted
+  runners with 3 licensed products pre-installed and cannot go green on a
+  stock runner at any step count; this example does, in 1 job / 5 steps,
+  on free infrastructure.
 - **BLF + ASC trace read/write** (BUS-05, `TOOL-REQ-019`/`TOOL-REQ-020`;
   #45): `tapwright.trace.write_blf()`/`read_blf()` and
   `write_asc()`/`read_asc()`, wrapping `python-can`'s own
