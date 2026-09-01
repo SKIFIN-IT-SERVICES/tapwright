@@ -20,15 +20,16 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**22 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
+**23 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
 partials, 🔵 with a note, count as "landed but not formally signed off"):
 INF-01–05, HAL-01/02/07/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-08, BUS-01/02/05. Roughly 59% of the loop count — see each
-section's table below for per-loop detail; this line replaces the former
-per-milestone rollup table, which drifted out of sync with the per-loop
-tables (a second tracking surface saying something different from the
-first is worse than one surface, even an imperfect one) and didn't map
-cleanly onto the plan's own M1–M6 loop groupings in the first place.
+RUN-05, RUN-06, RUN-08, BUS-01/02/05. Roughly 62% of the loop count — see
+each section's table below for per-loop detail; this line replaces the
+former per-milestone rollup table, which drifted out of sync with the
+per-loop tables (a second tracking surface saying something different
+from the first is worse than one surface, even an imperfect one) and
+didn't map cleanly onto the plan's own M1–M6 loop groupings in the first
+place.
 
 Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has everything
 buildable without physical hardware done — `vcan`, LGPL isolation
@@ -39,9 +40,9 @@ complete, transport-agnostic UDS-over-CAN-and-DoIP client, **the
 process-boundary interception point** `docs/architecture.md` §4 requires,
 **and confirmed malformed-response hardening**, with ODX and SOVD loops
 still ahead. L3 (RUN) now has its
-fixture layer, a named CLI entry point, a container image build, **and
-both HTML and JSON reports**, with the declarative-YAML loop still ahead.
-**L1 (BUS) now has
+fixture layer, a named CLI entry point, a container image build, both
+HTML and JSON reports, **and a benchmarked cold-clone CI example**, with
+the declarative-YAML loop still ahead. **L1 (BUS) now has
 DBC and ARXML decode both first-class, plus BLF/ASC trace I/O**, with
 restbus still ahead of it.
 
@@ -307,7 +308,7 @@ restbus still ahead of it.
 | RUN-03 | HTML report | W | T2 | 4 | Must | 🔵 |
 | RUN-04 | JSON / ATX-style machine-readable report | W | T2 | 4 | Should | 🔵 |
 | RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔵 |
-| RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔴 |
+| RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔵 |
 | RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔴 |
 | RUN-08 | Container image published alongside PyPI package | X | T2 | 4 | Must | 🔵 with a note |
 | RUN-09 | Time-to-first-green-test < 1 hour, measured on real users | D | T5 | 4 | Must | 🔴 |
@@ -386,6 +387,23 @@ restbus still ahead of it.
 > entrypoint — see the Dockerfile's own comment. Marked "with a note"
 > rather than a clean 🔵 for that scope correction, not for anything
 > unverified.
+
+> **RUN-06** (#47, PR #48): `examples/github-actions/` — a standalone
+> example, deliberately *not* this repo's own `ci.yml` (which tests
+> tapwright's own source, not what a third-party consumer's cold clone
+> experiences). One small test on RUN-01's own `uds` fixture, a
+> copy-pasteable workflow reusing `bring-up-vcan` via GitHub's cross-repo
+> action-reference syntax rather than duplicating vcan setup. **The
+> benchmark the plan required was done for real**: cloned
+> `vectorgrp/ci-siltest-demo` and read its workflow directly (research
+> only, not committed) — Vector's own public CI reference needs
+> self-hosted runners with three licensed products (DaVinci Configurator,
+> vVIRTUALtarget, CANoe4SW Server Edition) pre-installed and cannot go
+> green on a stock runner at any step count; `docs/run-06-benchmark.md`
+> records the comparison. The new `Example — GitHub Actions (RUN-06)` CI
+> job runs the example's own test against the current source on every
+> push, so "goes green from a cold clone" is proven by CI itself. All 11
+> CI jobs green.
 
 > **RUN-09 is human-led by design.** Its oracle is a stopwatch and a person who
 > has never seen the tool. Run it at least twice with different subjects.
