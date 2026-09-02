@@ -142,3 +142,93 @@ source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc"
 added = "2026-08-18"
 verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
 description = "Golden decode of MuxMessage with MuxSelector=1, selecting MuxedSignalB — same raw payload as selector_0 except the selector byte, decoding to a different signal entirely"
+
+[[fixture]]
+path = "databases/cyclic.dbc"
+sha256 = "084ef60d1c02d8abbd0335a9b89726ab15dee897a50248708c884d6372be6ce8"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for BUS-07 (issue #49); no external source"
+added = "2026-09-02"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Two messages for cyclic-send tests: EngineData declares GenMsgCycleTime=50 (ms), NoCycleMessage declares none -- exercising both the DBC-driven automatic-period path and its ValueError-on-missing-cycle-time error case"
+
+[[fixture]]
+path = "databases/multiplexed.dbc"
+sha256 = "48bbcf5ac38d832a1b2dc0d33e94c76c3e06101afeca68c5733266fea61cd671"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for BUS-01 (issue #22); no external source"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Three messages exercising DBC decode edge cases: EngineData (standard 11-bit ID, plain scaling, a negative offset), ExtendedMsg (29-bit extended ID), MuxMessage (a multiplexor signal selecting between two differently-scaled multiplexed signals)"
+
+[[fixture]]
+path = "databases/vehicle_signals.arxml"
+sha256 = "eabe80162b4f239cdef894e09841c05fdf9b50923d698cbba73a9c79d8642ed7"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for BUS-02 (issue #37); no external source. No suitable public-domain AUTOSAR ARXML with the right property mix (plain scaling, negative offset, 29-bit extended ID) was found"
+added = "2026-08-25"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Two AUTOSAR 4.x CAN frames: VehicleStatus (standard 11-bit ID, a scaled signal, a negative-offset signal) and ExtendedDiag (29-bit extended ID)"
+
+[[fixture]]
+path = "expected/arxml_extended_diag.json"
+sha256 = "5bb81f2fa47da83abf36fe536c457063d1df2e343c2c6945e65b1444635d7ba1"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against vehicle_signals.arxml, force_extended_id=True"
+added = "2026-08-25"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of ExtendedDiag: a 29-bit extended arbitration ID, ARXML-sourced"
+
+[[fixture]]
+path = "expected/arxml_vehicle_status.json"
+sha256 = "84039f87f901808137260466250d0bfc29beb9a1fc46034427446a6655e45e77"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against vehicle_signals.arxml; hand-verified against the ARXML's own COMPU-RATIONAL-COEFFS"
+added = "2026-08-25"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of VehicleStatus: a scaled signal and a negative-offset signal, ARXML-sourced"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_engine_data.json"
+sha256 = "96064ed42ee494111abb28c8cfaad571c97ae458ad8965f41004edbd31da7155"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc; hand-verified against the DBC's own scale/offset lines"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of EngineData: plain scaling (EngineSpeed) and a negative offset (EngineTemp)"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_extended_msg.json"
+sha256 = "cd9af25d0c064878cbd7ba4e1c8dd213842b9989944ccf52a70a43501fb89be1"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc, force_extended_id=True"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of ExtendedMsg: a 29-bit extended arbitration ID"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_mux_selector_0.json"
+sha256 = "29e8880e8d812ca52a976a0151a68cc23a182cb3f308510699478e02b6964294"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of MuxMessage with MuxSelector=0, selecting MuxedSignalA"
+
+[[fixture]]
+path = "expected/dbc_multiplexed_mux_selector_1.json"
+sha256 = "1e3549533968fdf7a84e5b748d30efb3444cd8eb811f3334dad3f4ae85f6702c"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Decoded by cantools 42.0.3 directly against multiplexed.dbc"
+added = "2026-08-18"
+verified_by = "DeepanshuPandey22 (pending explicit confirmation -- see PR description)"
+description = "Golden decode of MuxMessage with MuxSelector=1, selecting MuxedSignalB — same raw payload as selector_0 except the selector byte, decoding to a different signal entirely"

@@ -42,6 +42,30 @@ class Bus:
         )
         self._raw_bus.send(message)
 
+    def send_periodic(self, frame: Frame, period: float) -> can.broadcastmanager.CyclicSendTaskABC:
+        """Transmit `frame` repeatedly every `period` seconds until stopped.
+
+        TOOL-REQ-011 (basic single/multi-message cyclic stimulation), not
+        multi-node restbus simulation (TOOL-REQ-012, out of scope). Wraps
+        can.BusABC.send_periodic() rather than reimplementing periodic
+        timing — see AGENTS.md §3. The returned task's only public method is
+        stop(); no tapwright-specific wrapper is added around it since there
+        is nothing left to bridge.
+        """
+        if self._closed:
+            raise BusClosedError("cannot send on a bus after shutdown()")
+        if period <= 0:
+            raise ValueError(f"period must be positive, got {period!r}")
+        if frame.is_fd and not self._fd:
+            raise CapabilityError("cannot send a CAN-FD frame on a bus opened without fd=True")
+        message = can.Message(
+            arbitration_id=frame.arbitration_id,
+            data=frame.data,
+            is_extended_id=frame.is_extended_id,
+            is_fd=frame.is_fd,
+        )
+        return self._raw_bus.send_periodic(message, period)
+
     def recv(self, timeout: float | None = None) -> Frame | None:
         if self._closed:
             raise BusClosedError("cannot recv on a bus after shutdown()")

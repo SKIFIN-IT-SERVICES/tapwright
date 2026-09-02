@@ -1,0 +1,18 @@
+VERSION ""
+
+NS_ :
+
+BS_:
+
+BU_: ECU Tester
+
+BO_ 100 EngineData: 4 ECU
+ SG_ EngineSpeed : 0|16@1+ (1,0) [0|65535] "rpm" Tester
+ SG_ EngineTemp : 16|8@1+ (1,-40) [0|215] "degC" Tester
+
+BO_ 200 NoCycleMessage: 2 ECU
+ SG_ Flag : 0|8@1+ (1,0) [0|255] "" Tester
+
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 100000;
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_ "GenMsgCycleTime" BO_ 100 50;

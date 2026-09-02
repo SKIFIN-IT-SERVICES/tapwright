@@ -35,15 +35,14 @@ import time
 
 import pytest
 
+from tapwright.buses.cyclic import start_cyclic_from_dbc
 from tapwright.dbc_arxml import load_dbc
 from tapwright.hal import Frame, open_bus
 from tapwright.hal.errors import CapabilityError
 
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #49)")
-
 pytestmark = pytest.mark.requires_vcan
 
-FIXTURES_DBC = "fixtures/databases/multiplexed.dbc"
+FIXTURES_DBC = "fixtures/databases/cyclic.dbc"
 
 
 # ---------------------------------------------------------------------------
@@ -51,7 +50,6 @@ FIXTURES_DBC = "fixtures/databases/multiplexed.dbc"
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_send_periodic_transmits_repeatedly_at_the_configured_period(vcan_channel):
     sender = open_bus(backend="socketcan", channel=vcan_channel)
     receiver = open_bus(backend="socketcan", channel=vcan_channel)
@@ -73,19 +71,17 @@ def test_send_periodic_transmits_repeatedly_at_the_configured_period(vcan_channe
         receiver.shutdown()
 
 
-@SKIP
 def test_dbc_declared_cycle_time_is_used_automatically(vcan_channel):
     """The literal "DBC-driven cycle times" requirement: the caller
     doesn't specify a period at all -- it comes from the loaded
     `CanDatabase`'s own message definition.
     """
-    from tapwright.buses.cyclic import start_cyclic_from_dbc
-
     db = load_dbc(FIXTURES_DBC)
     sender = open_bus(backend="socketcan", channel=vcan_channel)
     receiver = open_bus(backend="socketcan", channel=vcan_channel)
     try:
-        task = start_cyclic_from_dbc(sender, db, "EngineData", {"EngineSpeed": 1000.0, "EngineTemp": 60})
+        signals = {"EngineSpeed": 1000.0, "EngineTemp": 60}
+        task = start_cyclic_from_dbc(sender, db, "EngineData", signals)
         try:
             assert receiver.recv(timeout=1.0) is not None
         finally:
@@ -100,7 +96,6 @@ def test_dbc_declared_cycle_time_is_used_automatically(vcan_channel):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_stop_actually_stops_transmission(vcan_channel):
     sender = open_bus(backend="socketcan", channel=vcan_channel)
     receiver = open_bus(backend="socketcan", channel=vcan_channel)
@@ -118,24 +113,20 @@ def test_stop_actually_stops_transmission(vcan_channel):
         receiver.shutdown()
 
 
-@SKIP
 def test_dbc_message_with_no_declared_cycle_time_raises_clear_error(vcan_channel):
     """A message the DBC doesn't declare a cycle time for can't silently
     default to something arbitrary -- the caller must be told to supply
     one explicitly.
     """
-    from tapwright.buses.cyclic import start_cyclic_from_dbc
-
-    db = load_dbc(FIXTURES_DBC)  # this fixture's messages declare no GenMsgCycleTime
+    db = load_dbc(FIXTURES_DBC)  # NoCycleMessage declares no GenMsgCycleTime
     sender = open_bus(backend="socketcan", channel=vcan_channel)
     try:
         with pytest.raises(ValueError):
-            start_cyclic_from_dbc(sender, db, "EngineData", {"EngineSpeed": 0.0, "EngineTemp": 0.0})
+            start_cyclic_from_dbc(sender, db, "NoCycleMessage", {"Flag": 0})
     finally:
         sender.shutdown()
 
 
-@SKIP
 def test_multiple_concurrent_cyclic_tasks_do_not_interfere(vcan_channel):
     sender = open_bus(backend="socketcan", channel=vcan_channel)
     receiver = open_bus(backend="socketcan", channel=vcan_channel)
@@ -166,7 +157,6 @@ def test_multiple_concurrent_cyclic_tasks_do_not_interfere(vcan_channel):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_non_positive_period_raises_clear_error_immediately(vcan_channel):
     bus = open_bus(backend="socketcan", channel=vcan_channel)
     try:
@@ -176,7 +166,6 @@ def test_non_positive_period_raises_clear_error_immediately(vcan_channel):
         bus.shutdown()
 
 
-@SKIP
 def test_capability_check_still_applies_through_the_periodic_path(vcan_channel):
     """The same `CapabilityError` HAL-07 already proved for `send()` must
     not be bypassable by going through `send_periodic()` instead -- one
