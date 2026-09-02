@@ -112,6 +112,23 @@ class CanDatabase:
             return None
         return message.cycle_time / 1000.0
 
+    def frame_id(self, message_name: str) -> tuple[int, bool]:
+        """The named message's `(arbitration_id, is_extended_id)` — used by
+        `tapwright.runner.wait.wait_for_signal` (`TOOL-REQ-029`) to filter
+        incoming frames by message identity before decoding them, rather
+        than matching on decoded signal name alone (which could
+        misattribute a frame from an unrelated message that happens to
+        share a signal name).
+        """
+        try:
+            message = self._db.get_message_by_name(message_name)
+        except KeyError as exc:
+            raise UnknownMessageError(
+                f"no message named {message_name!r} in this database"
+            ) from exc
+
+        return message.frame_id, message.is_extended_frame
+
 
 def _load(path: str | Path, database_format: str) -> CanDatabase:
     """Shared load path for `load_dbc()`/`load_arxml()`. `database_format`
