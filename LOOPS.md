@@ -20,10 +20,10 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**23 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
+**24 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
 partials, 🔵 with a note, count as "landed but not formally signed off"):
 INF-01–05, HAL-01/02/07/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-06, RUN-08, BUS-01/02/05. Roughly 62% of the loop count — see
+RUN-05, RUN-06, RUN-08, BUS-01/02/05/07. Roughly 65% of the loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
 per-loop tables (a second tracking surface saying something different
@@ -134,7 +134,7 @@ restbus still ahead of it.
 | BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | 🔴 |
 | BUS-05 | Trace I/O: BLF + ASC read/write | W | T4 | 6 | Must | 🔵 with a note |
 | BUS-06 | MDF4 via `asammdf`, optional extra + LGPL isolation | W | T3 | 5 | Should | 🔴 |
-| BUS-07 | Restbus / cyclic-send engine, multi-node, DBC-driven cycle times | P | T4 | 8 | Must | 🔴 |
+| BUS-07 | Cyclic-send engine, single/multi-message, DBC-driven cycle times | P | T4 | 8 | Must | 🔵 |
 | BUS-08 | Signal-level subscribe/filter API over live traffic | I | T2 | 5 | Should | 🔴 |
 | BUS-09 | Ethernet restbus basics | P | T2 | 6 | Could | 🔴 |
 
@@ -191,6 +191,31 @@ restbus still ahead of it.
 > CANoe interop (`TOOL-REQ-019`/`020`'s own literal wording) is
 > unverified — only round-tripping through `python-can`'s own
 > implementation is tested, in both directions. All 10 CI jobs green.
+
+> **BUS-07** (#49, PR #50): `hal.Bus.send_periodic()` wraps `python-can`'s
+> own `BusABC.send_periodic()`; `tapwright.buses.start_cyclic_from_dbc()`
+> derives the period from an already-loaded `CanDatabase`'s declared
+> `GenMsgCycleTime`, raising `ValueError` when neither a declared cycle
+> time nor an explicit period is given. **Scope correction, flagged in the
+> issue and applied here**: the plan's own loop table titled this
+> "Restbus / cyclic-send engine, multi-node" — but the cited requirement
+> (`TOOL-REQ-011`, Must) is scoped to single/multi-*message* "basic
+> stimulation," not multi-node simulated ECUs with node-behavior
+> scripting (`TOOL-REQ-012`, Should/Fast-follow, explicitly deferred, and
+> already matching `buses/__init__.py`'s own pre-existing docstring and
+> `docs/tooling-requirements.md`'s Won't-scope entry against a "GUI
+> restbus-simulation designer"). This file's Goal column corrected to
+> match. New self-authored fixture `fixtures/databases/cyclic.dbc` — the
+> existing `multiplexed.dbc` fixture is hash-checked immutable and none of
+> its messages declare a cycle time, so a new small fixture was added
+> rather than modified. 7 T4/T2 test cases (`vcan`-gated, skip locally on
+> Windows) cover the DBC-driven and explicit-period paths, `.stop()`
+> actually halting transmission, concurrent independent cyclic tasks, and
+> HAL-07's existing `CapabilityError` still applying through the periodic
+> send path. Timing assertions use a generously wide tolerance band rather
+> than the literal ±5% `TOOL-REQ-011` names, documented as a deliberate
+> gap: a shared CI VM's scheduler can't reliably meet a tight jitter
+> budget. All CI jobs green.
 
 ## DIAG — L2 Diagnostics Engine (`src/tapwright/diag/`)
 
