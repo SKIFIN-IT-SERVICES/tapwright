@@ -20,10 +20,10 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**24 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
+**25 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
 partials, 🔵 with a note, count as "landed but not formally signed off"):
 INF-01–05, HAL-01/02/07/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-06, RUN-08, BUS-01/02/05/07. Roughly 65% of the loop count — see
+RUN-05, RUN-06, RUN-08, BUS-01/02/05/06/07. Roughly 68% of the loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
 per-loop tables (a second tracking surface saying something different
@@ -43,8 +43,9 @@ still ahead. L3 (RUN) now has its
 fixture layer, a named CLI entry point, a container image build, both
 HTML and JSON reports, **and a benchmarked cold-clone CI example**, with
 the declarative-YAML loop still ahead. **L1 (BUS) now has
-DBC and ARXML decode both first-class, plus BLF/ASC trace I/O**, with
-restbus still ahead of it.
+DBC and ARXML decode both first-class, BLF/ASC/MDF4 trace I/O, and
+single/multi-message cyclic-send**, with LDF, A2L, and signal-level
+subscribe/filter still ahead of it.
 
 ---
 
@@ -133,7 +134,7 @@ restbus still ahead of it.
 | BUS-03 | LDF (LIN) database support | W | T3 | 4 | Should | 🔴 |
 | BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | 🔴 |
 | BUS-05 | Trace I/O: BLF + ASC read/write | W | T4 | 6 | Must | 🔵 with a note |
-| BUS-06 | MDF4 via `asammdf`, optional extra + LGPL isolation | W | T3 | 5 | Should | 🔴 |
+| BUS-06 | MDF4 via `asammdf`, optional extra + LGPL isolation | W | T3 | 5 | Must | 🔵 |
 | BUS-07 | Cyclic-send engine, single/multi-message, DBC-driven cycle times | P | T4 | 8 | Must | 🔵 |
 | BUS-08 | Signal-level subscribe/filter API over live traffic | I | T2 | 5 | Should | 🔴 |
 | BUS-09 | Ethernet restbus basics | P | T2 | 6 | Could | 🔴 |
@@ -191,6 +192,40 @@ restbus still ahead of it.
 > CANoe interop (`TOOL-REQ-019`/`020`'s own literal wording) is
 > unverified — only round-tripping through `python-can`'s own
 > implementation is tested, in both directions. All 10 CI jobs green.
+
+> **BUS-06** (#51, PR #52): `tapwright.trace.write_mdf4()`/`read_mdf4()`
+> wrap `python-can`'s own `MF4Writer`/`MF4Reader` — which already
+> implement CAN-frame-level MDF4 logging on top of `asammdf` — rather than
+> hand-rolling `asammdf.Signal`/`MDF.append()` calls directly. `asammdf`
+> (LGPL-3.0) ships as a new optional extra, `tapwright[mdf4]`; the core
+> installs and passes its full suite without it, extending the isolation
+> precedent HAL-08 already established for `python-can` itself.
+> **Priority correction, flagged in the issue and applied here**: the
+> plan's own loop table and this file listed this loop as Should, but the
+> cited requirement (`TOOL-REQ-021`) is Must — corrected in the table
+> above. This was in fact the highest-priority remaining unblocked loop,
+> since every other agent-buildable Must loop was already closed. **A real
+> upstream gap found during API research**: `python-can`'s own
+> `can/io/mf4.py` guards its `asammdf` import with `except ImportError`
+> only — an incompatible `asammdf`/`numpy` combination (hit directly on
+> this dev machine: `asammdf` 8.8.26 needs `numpy>=2`, and a partial
+> Windows-side numpy upgrade left `np.bool` raising `AttributeError`
+> instead of its usual deprecated-alias warning) surfaces as an
+> **uncaught `AttributeError`**, which can crash `import can` entirely
+> since `can/io/__init__.py` imports `mf4.py` unconditionally. This
+> temporarily broke `pytest` globally on this machine (every project, not
+> just this repo) after `asammdf` was installed for research purposes —
+> caught immediately, fixed by uninstalling it from the global
+> environment, and all further development done in an isolated `.venv`
+> instead. `write_mdf4()`/`read_mdf4()` catch `python-can`'s own
+> correctly-raised `NotImplementedError` (the "not installed at all" case)
+> and translate it to `TraceError` naming the extra — the failure mode
+> this project's own code can actually control; the `AttributeError` case
+> is an upstream `python-can` gap, not fixed here. 8 T3/T4 test cases, all
+> using `pytest.importorskip("asammdf")` so the file itself proves both
+> halves of the oracle: skips cleanly in the existing `t3-differential`
+> job (no `[mdf4]`), passes for real in a new `mdf4-extra` CI job (with
+> it). All CI jobs green.
 
 > **BUS-07** (#49, PR #50): `hal.Bus.send_periodic()` wraps `python-can`'s
 > own `BusABC.send_periodic()`; `tapwright.buses.start_cyclic_from_dbc()`
