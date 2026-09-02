@@ -8,6 +8,23 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **MDF4 trace read/write** (BUS-06, `TOOL-REQ-021`; #51):
+  `tapwright.trace.write_mdf4()`/`read_mdf4()`, wrapping `python-can`'s own
+  `MF4Writer`/`MF4Reader` (which already implement CAN-frame-level MDF4
+  logging on top of `asammdf`) rather than hand-rolling `asammdf.Signal`
+  calls directly. `asammdf` (LGPL-3.0) ships as a new optional extra,
+  `pip install tapwright[mdf4]` — the core installs and passes its full
+  suite without it, matching the isolation precedent already established
+  for `python-can` itself (HAL-08, `FW-REQ-019`). A `python-can` gap found
+  during development: its own `mf4.py` only guards the `asammdf` import
+  with `except ImportError`, so an incompatible `asammdf`/`numpy`
+  combination surfaces as an uncaught `AttributeError` deep inside
+  `python-can` rather than a clean message — `write_mdf4()`/`read_mdf4()`
+  instead catch `python-can`'s own (correctly-raised) `NotImplementedError`
+  for the "not installed at all" case and translate it to `TraceError`
+  naming the extra. **Priority correction, flagged in issue #51**: the
+  plan's own loop table and `LOOPS.md` listed this loop as Should, but the
+  cited requirement, `TOOL-REQ-021`, is rated Must — corrected here.
 - **Cyclic-send engine, DBC-driven cycle times** (BUS-07, `TOOL-REQ-011`;
   #49): `hal.Bus.send_periodic()` (wrapping `python-can`'s own
   `BusABC.send_periodic()`) for explicit-period cyclic transmission, plus

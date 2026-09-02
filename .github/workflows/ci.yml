@@ -162,6 +162,20 @@ jobs:
         env:
           TAPWRIGHT_CHANNEL: vcan0
 
+  mdf4-extra:
+    name: MDF4 extra (BUS-06)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      # Proves the other half of BUS-06's oracle: t3-differential (above)
+      # installs without [mdf4] and shows these cases skip cleanly; this
+      # job installs *with* it and must show them passing for real.
+      - run: pip install -e ".[dev,mdf4]"
+      - run: pytest tests/differential/test_mdf4_io.py -v
+
   coverage-ratchet:
     name: Coverage ratchet (L0-L2)
     runs-on: ubuntu-latest
