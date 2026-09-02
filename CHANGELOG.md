@@ -8,6 +8,20 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Deterministic wait helpers** (RUN-10, `TOOL-REQ-029`; #53):
+  `tapwright.runner.wait.wait_for_message()`/`wait_for_signal()`/
+  `wait_for_response()` — a test polling for a bus event or a diagnostic
+  response no longer needs a hand-rolled sleep/retry loop. All three raise
+  a new `WaitTimeoutError` on timeout rather than returning `None` or
+  silently giving up. `CanDatabase` gains a small `frame_id()` helper
+  (arbitration ID + extended-ID flag for a named message), used by
+  `wait_for_signal()` to filter incoming frames by message identity before
+  decoding, so a frame from an unrelated message can never be
+  misattributed even if it happens to share a signal name. **New loop, not
+  one of the plan's original 37**: `TOOL-REQ-029` is Must-priority and
+  named directly in `docs/architecture.md`'s `NFR-003`, but no loop in the
+  plan's own table ever covered it — RUN-01 explicitly flagged this gap
+  when it shipped without it, and this closes it.
 - **MDF4 trace read/write** (BUS-06, `TOOL-REQ-021`; #51):
   `tapwright.trace.write_mdf4()`/`read_mdf4()`, wrapping `python-can`'s own
   `MF4Writer`/`MF4Reader` (which already implement CAN-frame-level MDF4
