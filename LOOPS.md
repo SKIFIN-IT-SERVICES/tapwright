@@ -3,9 +3,11 @@
 # LOOPS.md — live loop backlog
 
 The 37 work units of [`DEVELOPMENT-PLAN-L0-L3-AGENTIC.md`](DEVELOPMENT-PLAN-L0-L3-AGENTIC.md) §5,
+plus RUN-10 (added here, not in the plan's own table — see its note below),
 with current status. The plan is the *specification* and does not change as work
 proceeds; this file is the *state* and changes constantly. When they disagree
-about what has been built, this file is right.
+about what has been built, this file is right — including when the plan's own
+loop table is simply missing something, as RUN-10 was.
 
 Each loop becomes a GitHub issue using the SPEC template (plan Appendix A)
 before implementation starts. A loop with no named oracle is not ready to start.
@@ -20,10 +22,12 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**25 of 37 loops closed** (🔵 below — closed on `main`, CI-verified; four
-partials, 🔵 with a note, count as "landed but not formally signed off"):
+**26 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
+its own note; 🔵 below — closed on `main`, CI-verified; four partials, 🔵
+with a note, count as "landed but not formally signed off"):
 INF-01–05, HAL-01/02/07/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-06, RUN-08, BUS-01/02/05/06/07. Roughly 68% of the loop count — see
+RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 68% of the
+loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
 per-loop tables (a second tracking surface saying something different
@@ -372,6 +376,29 @@ subscribe/filter still ahead of it.
 | RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔴 |
 | RUN-08 | Container image published alongside PyPI package | X | T2 | 4 | Must | 🔵 with a note |
 | RUN-09 | Time-to-first-green-test < 1 hour, measured on real users | D | T5 | 4 | Must | 🔴 |
+| RUN-10 | Deterministic wait helpers (`wait_for_message`/`wait_for_signal`/`wait_for_response`) | W | T2 | 5 | Must | 🔵 |
+
+> **RUN-10** (#53, PR #54) — **not one of the plan's original 37 loops.**
+> `TOOL-REQ-029` (Must) is named directly in `docs/architecture.md`'s
+> `NFR-003` but has no loop anywhere in the plan's own table — checked
+> every RUN/INF/HAL/BUS/DIAG row. RUN-01's own closeout below already
+> flagged this precisely when it shipped without it ("flagged as
+> fast-follows rather than silently dropped"); this is that fast-follow,
+> added to this file's own loop count rather than folded silently into an
+> existing ID. `wait_for_message(bus, timeout, predicate)` polls
+> `hal.Bus.recv()` (which already blocks up to its own timeout, so no
+> artificial polling interval is needed there); `wait_for_signal(bus, db,
+> message_name, signal_name, predicate, timeout)` layers
+> `dbc_arxml.CanDatabase` decode on top of it — `CanDatabase` gained a
+> small new `frame_id()` helper so a frame from an unrelated message can
+> never be misattributed even if it shares a signal name;
+> `wait_for_response(call, predicate, timeout, poll_interval)` is a
+> generic retry-until-predicate wrapper around any callable, since polling
+> an arbitrary callable has no blocking-recv equivalent. All three raise
+> one new `WaitTimeoutError` on timeout. 9 test cases, split by tier: 3 in
+> `tests/unit/` for `wait_for_response()` (needs no `vcan`, so not gated
+> behind `requires_vcan`), 6 in `tests/integration/` for the two
+> bus-polling helpers. All CI jobs green.
 
 > **RUN-01** (PR #21): `tapwright.runner.plugin` registered as a `pytest11`
 > entry point — confirmed live (`tapwright-0.0.1.dev0` in pytest's own
