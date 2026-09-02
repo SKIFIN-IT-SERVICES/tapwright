@@ -93,6 +93,25 @@ class CanDatabase:
             is_extended_id=message.is_extended_frame,
         )
 
+    def cycle_time(self, message_name: str) -> float | None:
+        """The named message's declared cycle time in seconds (from the
+        DBC's `GenMsgCycleTime` attribute or the ARXML equivalent), or
+        `None` if the database declares no cycle time for it — used by
+        `tapwright.buses.start_cyclic_from_dbc` (`TOOL-REQ-011`) rather
+        than reaching into cantools' own `Message.cycle_time` (milliseconds)
+        directly from outside this module.
+        """
+        try:
+            message = self._db.get_message_by_name(message_name)
+        except KeyError as exc:
+            raise UnknownMessageError(
+                f"no message named {message_name!r} in this database"
+            ) from exc
+
+        if message.cycle_time is None:
+            return None
+        return message.cycle_time / 1000.0
+
 
 def _load(path: str | Path, database_format: str) -> CanDatabase:
     """Shared load path for `load_dbc()`/`load_arxml()`. `database_format`

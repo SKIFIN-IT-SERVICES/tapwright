@@ -8,6 +8,17 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Cyclic-send engine, DBC-driven cycle times** (BUS-07, `TOOL-REQ-011`;
+  #49): `hal.Bus.send_periodic()` (wrapping `python-can`'s own
+  `BusABC.send_periodic()`) for explicit-period cyclic transmission, plus
+  `tapwright.buses.start_cyclic_from_dbc()` deriving the period
+  automatically from an already-loaded `CanDatabase`'s declared
+  `GenMsgCycleTime` (raising `ValueError` if none is declared and no
+  explicit period is given). Scoped to single/multi-*message* cyclic
+  stimulation per `TOOL-REQ-011`'s own Must-priority acceptance criterion
+  — not multi-node restbus simulation with node-behavior scripting
+  (`TOOL-REQ-012`, Should/Fast-follow, out of scope; see issue #49 for the
+  scope correction against the plan's own loop-table title).
 - **Cold-clone GitHub Actions example** (RUN-06, `TOOL-REQ-033`; #47):
   `examples/github-actions/` — a standalone, cold-clone-able example of
   testing UDS diagnostics with `tapwright` in CI (one small test using
