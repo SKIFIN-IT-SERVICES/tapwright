@@ -68,6 +68,13 @@ dev = [
     "pre-commit",
     "tomli; python_version<'3.11'",  # tomllib landed in 3.11; the floor is 3.10
 ]
+# BUS-06 / TOOL-REQ-021 / FW-REQ-015: MDF4 read/write. asammdf is LGPL-3.0,
+# so it ships as an optional extra rather than a core dependency — the core
+# installs and passes its full suite without it (FW-REQ-019's isolation
+# boundary, same precedent as python-can/HAL-08).
+mdf4 = [
+    "asammdf>=8",
+]
 
 # RUN-01 / TOOL-REQ-028: auto-discovered on `pip install tapwright` — a user
 # needs no `pytest_plugins = [...]` to get the ecu/bus/uds fixtures. This

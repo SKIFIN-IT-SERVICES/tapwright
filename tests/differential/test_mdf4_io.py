@@ -58,7 +58,8 @@ from tapwright.trace.errors import TraceError, TraceLoadError
 
 pytest.importorskip("asammdf")
 
-SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #51)")
+from asammdf import MDF  # noqa: E402, I001 -- only reachable after the importorskip above
+from tapwright.trace import read_mdf4, write_mdf4  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -66,10 +67,7 @@ SKIP = pytest.mark.skip(reason="test plan — implementation pending (issue #51)
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_round_trips_frames_through_write_then_read(tmp_path):
-    from tapwright.trace import read_mdf4, write_mdf4
-
     frames = [
         Frame(arbitration_id=0x100, data=b"\x01\x02", timestamp=0.0),
         Frame(arbitration_id=0x101, data=b"\xaa\xbb\xcc", timestamp=0.1),
@@ -79,22 +77,17 @@ def test_round_trips_frames_through_write_then_read(tmp_path):
     result = read_mdf4(path)
 
     assert len(result) == len(frames)
-    for expected, actual in zip(frames, result):
+    for expected, actual in zip(frames, result, strict=True):
         assert actual.arbitration_id == expected.arbitration_id
         assert actual.data == expected.data
         assert actual.timestamp == pytest.approx(expected.timestamp, abs=1e-4)
 
 
-@SKIP
 def test_written_file_opens_directly_with_asammdf(tmp_path):
     """The literal acceptance criterion: a third-party MDF4-compliant tool
     (here, `asammdf` used directly, not through `tapwright`) can open what
     `write_mdf4()` produces.
     """
-    from asammdf import MDF
-
-    from tapwright.trace import write_mdf4
-
     frames = [Frame(arbitration_id=0x200, data=b"\x01\x02\x03\x04")]
     path = tmp_path / "direct.mf4"
     write_mdf4(frames, path)
@@ -108,19 +101,13 @@ def test_written_file_opens_directly_with_asammdf(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_writing_zero_frames_round_trips_to_an_empty_list(tmp_path):
-    from tapwright.trace import read_mdf4, write_mdf4
-
     path = tmp_path / "empty.mf4"
     write_mdf4([], path)
     assert read_mdf4(path) == []
 
 
-@SKIP
 def test_extended_id_frame_is_preserved(tmp_path):
-    from tapwright.trace import read_mdf4, write_mdf4
-
     frames = [Frame(arbitration_id=0x1ABCDEF, data=b"\x01", is_extended_id=True)]
     path = tmp_path / "extended.mf4"
     write_mdf4(frames, path)
@@ -130,10 +117,7 @@ def test_extended_id_frame_is_preserved(tmp_path):
     assert result[0].is_extended_id is True
 
 
-@SKIP
 def test_fd_frame_is_preserved(tmp_path):
-    from tapwright.trace import read_mdf4, write_mdf4
-
     frames = [Frame(arbitration_id=0x300, data=bytes(range(12)), is_fd=True)]
     path = tmp_path / "fd.mf4"
     write_mdf4(frames, path)
@@ -148,18 +132,12 @@ def test_fd_frame_is_preserved(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-@SKIP
 def test_reading_a_missing_file_raises_trace_load_error(tmp_path):
-    from tapwright.trace import read_mdf4
-
     with pytest.raises(TraceLoadError):
         read_mdf4(tmp_path / "does_not_exist.mf4")
 
 
-@SKIP
 def test_reading_a_garbage_file_raises_trace_load_error(tmp_path):
-    from tapwright.trace import read_mdf4
-
     path = tmp_path / "garbage.mf4"
     path.write_bytes(b"not an mdf file at all, just garbage bytes")
 
@@ -167,7 +145,6 @@ def test_reading_a_garbage_file_raises_trace_load_error(tmp_path):
         read_mdf4(path)
 
 
-@SKIP
 def test_missing_asammdf_extra_raises_a_clear_tapwright_error(tmp_path, monkeypatch):
     """Simulates `tapwright` installed *without* `[mdf4]`: `can.io.mf4`'s
     own module-level `asammdf` binding is `None` in that environment. The
@@ -175,8 +152,6 @@ def test_missing_asammdf_extra_raises_a_clear_tapwright_error(tmp_path, monkeypa
     `tapwright.trace` error naming the extra to install, not leak it
     verbatim.
     """
-    from tapwright.trace import write_mdf4
-
     monkeypatch.setattr(can.io.mf4, "asammdf", None)
 
     with pytest.raises(TraceError, match="tapwright\\[mdf4\\]"):
