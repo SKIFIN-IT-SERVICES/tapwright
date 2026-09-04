@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools 11.5.4 -->
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+ <DIAG-LAYER-CONTAINER ID="DLC.vehicle_diagnostics">
+   <SHORT-NAME>vehicle_diagnostics</SHORT-NAME>
+   <LONG-NAME>Self-authored golden ODX fixture for tapwright DIAG-06</LONG-NAME>
+  <ECU-VARIANTS>
+  <ECU-VARIANT ID="EngineECU.ecu_variant">
+     
+     <SHORT-NAME>EngineECU</SHORT-NAME>
+      <LONG-NAME>Engine control unit (self-authored fixture for DIAG-06)</LONG-NAME>
+     <DIAG-DATA-DICTIONARY-SPEC>
+       <DATA-OBJECT-PROPS>
+         <DATA-OBJECT-PROP ID="EngineECU.DOP.engine_speed">
+          <SHORT-NAME>engine_speed</SHORT-NAME>
+          <COMPU-METHOD>
+           <CATEGORY>IDENTICAL</CATEGORY>
+          </COMPU-METHOD>
+          <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+           <BIT-LENGTH>16</BIT-LENGTH>
+          </DIAG-CODED-TYPE>
+          <PHYSICAL-TYPE BASE-DATA-TYPE="A_UINT32" />
+         </DATA-OBJECT-PROP>
+       </DATA-OBJECT-PROPS>  
+     </DIAG-DATA-DICTIONARY-SPEC>
+     <DIAG-COMMS>
+       <DIAG-SERVICE  ID="EngineECU.service.read_engine_speed" SEMANTIC="CURRENTDATA">
+          <SHORT-NAME>read_engine_speed</SHORT-NAME> 
+         <REQUEST-REF ID-REF="EngineECU.RQ.read_engine_speed"/>
+         <POS-RESPONSE-REFS>
+           <POS-RESPONSE-REF ID-REF="EngineECU.PR.engine_speed_response" />
+         </POS-RESPONSE-REFS>
+       </DIAG-SERVICE>
+       <DIAG-SERVICE  ID="EngineECU.service.self_test" SEMANTIC="ROUTINE">
+          <SHORT-NAME>self_test</SHORT-NAME> 
+          <AUDIENCE IS-DEVELOPMENT="false">
+         </AUDIENCE>
+         <REQUEST-REF ID-REF="EngineECU.RQ.self_test"/>
+       </DIAG-SERVICE>
+     </DIAG-COMMS>
+     <REQUESTS>
+       <REQUEST ID="EngineECU.RQ.read_engine_speed">
+        <SHORT-NAME>read_engine_speed</SHORT-NAME>
+        <LONG-NAME>Read the current engine speed (RDBI, DID 0x1234)</LONG-NAME>
+        <PARAMS>
+         <PARAM  xsi:type="CODED-CONST">
+          <SHORT-NAME>sid</SHORT-NAME> 
+          <BYTE-POSITION>0</BYTE-POSITION>
+          <CODED-VALUE>34</CODED-VALUE>
+          
+           <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+            <BIT-LENGTH>8</BIT-LENGTH>
+           </DIAG-CODED-TYPE>
+         </PARAM>
+         <PARAM  xsi:type="CODED-CONST">
+          <SHORT-NAME>did</SHORT-NAME> 
+          <BYTE-POSITION>1</BYTE-POSITION>
+          <CODED-VALUE>4660</CODED-VALUE>
+          
+           <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+            <BIT-LENGTH>16</BIT-LENGTH>
+           </DIAG-CODED-TYPE>
+         </PARAM>
+        </PARAMS> 
+       </REQUEST>
+       <REQUEST ID="EngineECU.RQ.self_test">
+        <SHORT-NAME>self_test_request</SHORT-NAME>
+        <LONG-NAME>Start the engine self-test routine (RC, routine 0x0203)</LONG-NAME>
+        <PARAMS>
+         <PARAM  xsi:type="CODED-CONST">
+          <SHORT-NAME>sid</SHORT-NAME> 
+          <BYTE-POSITION>0</BYTE-POSITION>
+          <CODED-VALUE>49</CODED-VALUE>
+          
+           <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+            <BIT-LENGTH>8</BIT-LENGTH>
+           </DIAG-CODED-TYPE>
+         </PARAM>
+         <PARAM  xsi:type="CODED-CONST">
+          <SHORT-NAME>routine_control_type</SHORT-NAME> 
+          <BYTE-POSITION>1</BYTE-POSITION>
+          <CODED-VALUE>1</CODED-VALUE>
+          
+           <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+            <BIT-LENGTH>8</BIT-LENGTH>
+           </DIAG-CODED-TYPE>
+         </PARAM>
+         <PARAM  xsi:type="CODED-CONST">
+          <SHORT-NAME>routine_id</SHORT-NAME> 
+          <BYTE-POSITION>2</BYTE-POSITION>
+          <CODED-VALUE>515</CODED-VALUE>
+          
+           <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+            <BIT-LENGTH>16</BIT-LENGTH>
+           </DIAG-CODED-TYPE>
+         </PARAM>
+        </PARAMS> 
+       </REQUEST>
+     </REQUESTS>
+     <POS-RESPONSES>
+       <POS-RESPONSE ID="EngineECU.PR.engine_speed_response">
+        <SHORT-NAME>engine_speed_response</SHORT-NAME>
+        <PARAMS>
+         <PARAM  xsi:type="CODED-CONST">
+          <SHORT-NAME>sid</SHORT-NAME> 
+          <BYTE-POSITION>0</BYTE-POSITION>
+          <CODED-VALUE>98</CODED-VALUE>
+          
+           <DIAG-CODED-TYPE BASE-DATA-TYPE="A_UINT32" xsi:type="STANDARD-LENGTH-TYPE">
+            <BIT-LENGTH>8</BIT-LENGTH>
+           </DIAG-CODED-TYPE>
+         </PARAM>
+         <PARAM  xsi:type="VALUE">
+          <SHORT-NAME>engine_speed</SHORT-NAME> 
+          <BYTE-POSITION>1</BYTE-POSITION>
+          <DOP-REF ID-REF="EngineECU.DOP.engine_speed"/>
+         </PARAM>
+        </PARAMS> 
+       </POS-RESPONSE>
+     </POS-RESPONSES>
+   </ECU-VARIANT>
+  </ECU-VARIANTS>
+ </DIAG-LAYER-CONTAINER>
+</ODX>

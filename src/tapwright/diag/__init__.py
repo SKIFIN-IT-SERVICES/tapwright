@@ -21,8 +21,10 @@ responder — CAN via `ecu.py`/`transport.py`, DoIP via
 construction point that dispatches to whichever of the two the caller's
 config object names), and `interception` (DIAG-05 —
 `InterceptingConnection`, the process-boundary request/response
-interception point `docs/architecture.md` §4's second bullet requires).
-Submodules are accessed directly
+interception point `docs/architecture.md` §4's second bullet requires),
+and `odx_import` (DIAG-06 — `load_pdx()`/`load_odx()`, read-only DID/
+routine name resolution against an ODX/PDX database). Submodules are
+accessed directly
 (`tapwright.diag.connection_config`, etc.) rather than re-exported here, so
 importing `tapwright.diag` itself stays cheap — it doesn't pull in
 `can`/`isotp`/`udsoncan`/`doipclient` unless a submodule that actually

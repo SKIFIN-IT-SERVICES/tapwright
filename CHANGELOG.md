@@ -8,6 +8,22 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **ODX/PDX read-only import, DID/routine name resolution** (DIAG-06,
+  `TOOL-REQ-025`; #55): `tapwright.diag.odx_import.load_pdx()`/`load_odx()`
+  wrap `odxtools` (MIT, new core dependency) rather than reimplementing
+  ODX/PDX's XML schema parsing. `OdxDatabase.resolve_service_name()`
+  matches a raw request's bytes against a service's
+  `Request.coded_const_prefix()` — found directly that `odxtools`' own
+  `Request.decode()` only warns (doesn't raise) on a coded-const mismatch,
+  making it unsuitable for telling two services' requests apart. New
+  self-authored golden fixtures `fixtures/odx/engine_ecu.pdx`/`.odx`,
+  generated via `odxtools`' own object model and `write_pdx_file()`
+  (`fixtures/odx/generate_engine_ecu.py`) rather than hand-written XML —
+  ODX's schema is deep enough that hand-authoring directly (BUS-02's ARXML
+  approach) would be error-prone. Weak oracle by the requirement's own
+  design: this proves structural loading/resolution against a golden
+  fixture, not full ODX semantic correctness (a documented T5 human-gate
+  limitation, not something this loop claims to close).
 - **Deterministic wait helpers** (RUN-10, `TOOL-REQ-029`; #53):
   `tapwright.runner.wait.wait_for_message()`/`wait_for_signal()`/
   `wait_for_response()` — a test polling for a bus event or a diagnostic

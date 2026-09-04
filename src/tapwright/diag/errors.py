@@ -30,3 +30,17 @@ class TransportProtocolError(DiagError):
     rather than silently producing a wrong or incomplete payload, per the
     "silently wrong decode" failure mode the verification ladder (plan §3)
     exists to catch."""
+
+
+class OdxLoadError(DiagError):
+    """An ODX/PDX file could not be read — missing, unreadable, or not a
+    valid ODX/PDX file (DIAG-06)."""
+
+
+class OdxUnknownEcuError(DiagError):
+    """No ECU with the given name exists in this ODX/PDX database."""
+
+
+class OdxUnknownServiceError(DiagError):
+    """No diagnostic service in the named ECU matches the given raw
+    request bytes."""
