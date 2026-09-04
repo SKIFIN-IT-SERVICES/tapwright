@@ -114,6 +114,20 @@ licence = "MIT"
 verified = "2026-08-01"
 role = "Test runner and the L3 authoring substrate (FW-REQ-016, TOOL-REQ-028-030)"
 
+[[dependency]]
+name = "odxtools"
+licence = "MIT"
+verified = "2026-09-03"
+role = "ODX/PDX read-only import -> DID/routine name resolution (DIAG-06, TOOL-REQ-025)"
+notes = """
+Maintained by Mercedes-Benz's mbition team (github.com/mercedes-benz/odxtools).
+Pure Python, no isolation needed -- unlike python-can/asammdf, MIT is
+already in the permissive allowed list. Rejected pya2l (for the separate
+BUS-04 loop) for bundling ~300MB of compiled native binaries across 10
+platforms with no license/provenance disclosure for the binaries
+themselves; odxtools has no such gap.
+"""
+
 # ---------------------------------------------------------------------------
 # Development-only dependencies. Not distributed, so the policy is looser — but
 # still no strong copyleft, because a GPL dev tool that gets imported by shipped
