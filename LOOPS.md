@@ -22,11 +22,11 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**26 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
+**27 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
 its own note; 🔵 below — closed on `main`, CI-verified; four partials, 🔵
 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02/07/08, DIAG-01–05, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 68% of the
+INF-01–05, HAL-01/02/07/08, DIAG-01–06, DIAG-09, RUN-01, RUN-03, RUN-04,
+RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 71% of the
 loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
@@ -42,8 +42,9 @@ physical hardware sign-off, a named human task, not an agent one. L2
 (DIAG) now has a
 complete, transport-agnostic UDS-over-CAN-and-DoIP client, **the
 process-boundary interception point** `docs/architecture.md` §4 requires,
-**and confirmed malformed-response hardening**, with ODX and SOVD loops
-still ahead. L3 (RUN) now has its
+**confirmed malformed-response hardening, and read-only ODX/PDX import**,
+with the SOVD loop deliberately not started (Won't-scope per Phase 0/1's
+own requirements catalog — see DIAG-07's note). L3 (RUN) now has its
 fixture layer, a named CLI entry point, a container image build, both
 HTML and JSON reports, **and a benchmarked cold-clone CI example**, with
 the declarative-YAML loop still ahead. **L1 (BUS) now has
@@ -136,7 +137,7 @@ subscribe/filter still ahead of it.
 | BUS-01 | DBC load + decode/encode via `cantools` | W | T4 | 5 | Must | 🔵 |
 | BUS-02 | ARXML load + decode; dual-specification path (lightweight input first-class) | W | T4 | 7 | Must | 🔵 |
 | BUS-03 | LDF (LIN) database support | W | T3 | 4 | Should | 🔴 |
-| BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | 🔴 |
+| BUS-04 | A2L parse (read-only; no calibration write) | W | T3 | 4 | Should | ⏸️ |
 | BUS-05 | Trace I/O: BLF + ASC read/write | W | T4 | 6 | Must | 🔵 with a note |
 | BUS-06 | MDF4 via `asammdf`, optional extra + LGPL isolation | W | T3 | 5 | Must | 🔵 |
 | BUS-07 | Cyclic-send engine, single/multi-message, DBC-driven cycle times | P | T4 | 8 | Must | 🔵 |
@@ -256,6 +257,40 @@ subscribe/filter still ahead of it.
 > gap: a shared CI VM's scheduler can't reliably meet a tight jitter
 > budget. All CI jobs green.
 
+> **BUS-04 — blocked, not started.** Reuse research for A2L parsing found
+> only one real candidate, `pya2l`: BSD-licensed wrapper, but the wheel
+> bundles ~300MB of compiled native binaries (Go-style shared libraries
+> across 10 platform/arch combinations, started as a local gRPC server)
+> with no license or provenance disclosure anywhere for the binaries
+> themselves — fails `FW-REQ-017`'s "verified against the package's own
+> metadata" bar categorically differently than a known-LGPL dependency
+> like `python-can`/`asammdf` (isolatable); this is an *unverifiable*
+> license, not a known-but-restrictive one. Flagged to the user, who
+> chose to skip this loop rather than accept the risk or hand-roll a
+> parser. Status ⏸️ pending a properly-licensed alternative, not 🔴.
+
+> **BUS-03's own cited priority doesn't match this table, flagged but not
+> yet corrected.** This row (and the plan's own loop table) lists BUS-03
+> as Should, but the requirement it would actually implement,
+> `TOOL-REQ-016` ("LDF ingestion"), is rated **Could**/Fast-follow in
+> `docs/tooling-requirements.md` ("low priority until LIN (`TOOL-REQ-013`)
+> is prioritized"). Not corrected in the Pri column above yet, per this
+> project's own convention of correcting on file/close rather than
+> speculatively — noted here so a future loop-selection pass doesn't
+> over-rank it against genuinely Should-rated work.
+
+> **RUN-02 and BUS-08 — skipped for now, flagged before filing.** Neither
+> has any `TOOL-REQ`/`FW-REQ` citation anywhere in the requirements
+> catalog. RUN-02 (a YAML-driven test format) additionally sits in
+> tension with `TOOL-REQ-035`'s "tests are `.py`" framing and
+> `FW-REQ-001`'s "pytest-native authoring is the entire differentiation
+> claim against CAPL." Surfaced to the user rather than built against an
+> uncited, possibly-conflicting loop description; the user chose to skip
+> both for now. Left at 🔴 (not ⏸️) since these aren't blocked on an
+> external constraint the way DIAG-07/BUS-04 are — they're blocked on
+> someone deciding what these loops should actually mean before a test
+> plan can be written against them.
+
 ## DIAG — L2 Diagnostics Engine (`src/tapwright/diag/`)
 
 | ID | Goal | Type | Tier | It. | Pri | Status |
@@ -265,8 +300,8 @@ subscribe/filter still ahead of it.
 | DIAG-03 | DoIP transport via `doipclient` + entity discovery | W | T3 | 6 | Must | 🔵 |
 | DIAG-04 | Transport-agnostic connection abstraction (SOVD-shaped) | I | T3 | 6 | Must | 🔵 |
 | DIAG-05 | Interception/observer hooks — must work across a process boundary | D+I | T2 | 5 | Must | 🔵 |
-| DIAG-06 | ODX/PDX read-only import → DID/routine name resolution | W | T3 | 8 | Should | 🔴 |
-| DIAG-07 | SOVD client (REST/JSON, ISO 17978) | P | T3 | 8 | Should | 🔴 |
+| DIAG-06 | ODX/PDX read-only import → DID/routine name resolution | W | T3 | 8 | Should | 🔵 |
+| DIAG-07 | SOVD client (REST/JSON, ISO 17978) | P | T3 | 8 | Should | ⏸️ |
 | DIAG-08 | C-10 guardrail: `0x27` mechanics only; CI scan blocks key derivation | H | T1 | 3 | Must | 🔵 landed early with the substrate (`tools/check_forbidden.py`); the deliberate red-team commit that proves CI rejects it is still owed |
 | DIAG-09 | Malformed-response hardening: NRCs, timeouts, truncated frames | H | T4 | 7 | Must | 🔵 |
 
@@ -362,6 +397,41 @@ subscribe/filter still ahead of it.
 > **DIAG-06 has a weak oracle.** ODX semantic correctness cannot be fully
 > machine-verified: the loop closes on *structural* correctness, and semantic
 > spot-checks are a T5 human gate.
+
+> **DIAG-06 closed** (#55, PR #57): `tapwright.diag.odx_import.load_pdx()`/
+> `load_odx()` wrap `odxtools` (MIT, mercedes-benz/odxtools) rather than
+> reimplementing ODX/PDX's XML parsing. Reuse research first rejected
+> `pya2l` (for the separate BUS-04 loop) — it bundles ~300MB of compiled
+> native binaries across 10 platforms with no license/provenance
+> disclosure for the binaries themselves, failing `FW-REQ-017`'s
+> verification bar; `odxtools` has no such gap. **A real finding kept in
+> the module's own docstring**: `odxtools`' own `Request.decode()` only
+> *warns* (doesn't raise) on a coded-const mismatch, so it can't reliably
+> tell two services' requests apart — `resolve_service_name()` matches on
+> `Request.coded_const_prefix()` instead. New self-authored golden
+> fixtures `fixtures/odx/engine_ecu.pdx`/`.odx`, generated via `odxtools`'
+> own object model + `write_pdx_file()` rather than hand-written XML
+> (`fixtures/odx/generate_engine_ecu.py`) — ODX's schema is deep enough
+> that hand-authoring directly (BUS-02's ARXML approach) would be
+> error-prone. **A pre-existing bug found and worked around, not fixed,
+> in this PR**: `tools/check_fixtures.py --update` had silently
+> accumulated duplicate provenance entries across multiple past commits
+> (one path recorded 5 times on `main` before this PR), undetected
+> because `verify()`'s own duplicate handling silently collapses
+> same-path entries via a dict rather than flagging them —
+> `provenance.toml` rebuilt by hand as one entry per real file; the tool
+> bug itself is tracked in #56. All 12 CI jobs green.
+
+> **DIAG-07 — blocked, not started, flagged before filing.** `SOVD
+> client` appears in `docs/tooling-requirements.md`'s own Won't-scope
+> table for Phase 0/1 ("SOVD client — Fast-follow, cheap but not
+> day-1"), even though the plan's own loop table lists it as Should.
+> Per the file-issue skill's own rule ("if it maps to something in the
+> Won't-scope table, flag that clearly and ask the user to confirm
+> before filing"), this was surfaced and the user chose to skip it for
+> now rather than file it — status set to ⏸️ (blocked on a scope
+> decision, not agent capacity) rather than 🔴, so it doesn't read as
+> simply "not gotten to yet."
 
 ## RUN — L3 Test Authoring & CI Runner (`runner/`, `report/`)
 
