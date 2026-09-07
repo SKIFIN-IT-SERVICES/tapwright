@@ -159,6 +159,18 @@ verified = "2026-08-14"
 role = "Local hook runner (dev only)"
 
 [[dependency]]
+name = "pyyaml"
+licence = "MIT"
+verified = "2026-09-07"
+role = "mkdocs.yml nav sanity checks, INF-08 (dev only)"
+
+[[dependency]]
+name = "mkdocs"
+licence = "BSD-2-Clause"
+verified = "2026-09-07"
+role = "Docs site build, INF-08 / FW-REQ-066 (dev only)"
+
+[[dependency]]
 name = "hypothesis"
 licence = "MPL-2.0"
 verified = "2026-08-14"

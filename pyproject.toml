@@ -68,6 +68,8 @@ dev = [
     "mypy",
     "pre-commit",
     "tomli; python_version<'3.11'",  # tomllib landed in 3.11; the floor is 3.10
+    "pyyaml>=6",   # INF-08: mkdocs.yml nav sanity checks
+    "mkdocs>=1.6", # INF-08 / FW-REQ-066: docs site, wraps rather than reimplements
 ]
 # BUS-06 / TOOL-REQ-021 / FW-REQ-015: MDF4 read/write. asammdf is LGPL-3.0,
 # so it ships as an optional extra rather than a core dependency — the core

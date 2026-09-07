@@ -45,3 +45,6 @@ Thumbs.db
 *.asc
 *.mf4
 *.mdf
+
+# INF-08: mkdocs build output -- generated, not committed
+site/

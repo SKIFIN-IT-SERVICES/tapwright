@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Docs site (INF-08, FW-REQ-066). Built with `mkdocs` (BSD-2-Clause) rather
+# than a hand-rolled static-site generator, per AGENTS.md's reuse rule.
+#
+#     mkdocs build --strict    # what CI runs -- fails on any broken nav/link
+#     mkdocs serve              # local preview
+#
+# Deliberately not deployed to GitHub Pages here -- enabling that is a
+# repository-settings change, out of scope for this loop (see issue #59).
+
+site_name: tapwright
+site_description: CI-native, open-core UDS/DoIP diagnostic test runner and DBC/ARXML-aware trace analyzer
+repo_url: https://github.com/SKIFIN-IT-SERVICES/tapwright
+
+docs_dir: docs
+
+nav:
+  - Quickstart: quickstart.md
+  - README: README.md
+  - Architecture: architecture.md
+  - Tooling requirements: tooling-requirements.md
+  - Framework requirements: framework-requirements.md
+  - Phase 1 requirements: phase-1-requirements.md
+  - Input variables: input-variables.md
+  - Loop notes:
+      - "ARXML known gaps (BUS-02)": bus-02-arxml-known-gaps.md
+      - "Virtual ECU reuse evaluation (INF-05)": inf-05-simulator-reuse-evaluation.md
+      - "GitHub Actions benchmark (RUN-06)": run-06-benchmark.md
+
+validation:
+  links:
+    # docs/ is written to double as GitHub-browsable markdown first --
+    # several pages legitimately link to repo-root files (../PROCESS.md,
+    # ../LICENSE, ../CONTRIBUTING.md) that resolve correctly on GitHub but
+    # fall outside mkdocs' own docs_dir root, so they can never resolve
+    # inside the generated site. Downgraded from the "strict mode treats
+    # every warning as fatal" default rather than rewriting docs written
+    # for a different rendering context.
+    not_found: info
