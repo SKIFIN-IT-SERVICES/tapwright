@@ -63,6 +63,27 @@ def verify(fixtures_dir: Path, manifest: dict[str, Any]) -> list[str]:
     entries = manifest.get("fixture", [])
     by_path = {entry.get("path"): entry for entry in entries}
 
+    # A duplicate [[fixture]] block for the same path is itself the fault,
+    # regardless of whether the copies agree with each other — found
+    # directly during DIAG-06 (#56): several past `--update` runs had
+    # silently accumulated duplicate entries (one path recorded 5 times on
+    # `main`) undetected, because building `by_path` as a dict above would
+    # otherwise silently keep only the last one read.
+    path_counts: dict[str, int] = {}
+    for entry in entries:
+        path = entry.get("path")
+        if path is not None:
+            path_counts[path] = path_counts.get(path, 0) + 1
+    for path, count in sorted(path_counts.items()):
+        if count > 1:
+            errors.append(
+                f"fixtures/{path} is recorded {count} times in provenance.toml — exactly "
+                f"one entry is required.\n"
+                f"    Multiple entries for the same fixture means a reviewer can't tell "
+                f"which one is\n"
+                f"    authoritative. Merge them into a single entry."
+            )
+
     on_disk = {path.relative_to(fixtures_dir).as_posix() for path in fixture_files(fixtures_dir)}
 
     for rel in sorted(on_disk - set(by_path)):

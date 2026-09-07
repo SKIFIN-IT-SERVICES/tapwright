@@ -317,7 +317,14 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
-- Nothing yet — no functional code has shipped.
+- **`tools/check_fixtures.py` never detected duplicate provenance entries**
+  (#56): `verify()` now flags more than one `[[fixture]]` block for the
+  same path as its own hard error, regardless of whether the duplicates
+  agree with each other. Found while adding DIAG-06's fixtures —
+  `provenance.toml` had silently accumulated duplicate entries across
+  several past `--update` runs (one path recorded 5 times on `main`),
+  undetected because building `by_path` as a dict during verification
+  silently collapsed same-path entries rather than flagging them.
 
 ---
 
