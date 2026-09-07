@@ -13,6 +13,7 @@ thing it exists to stop".
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -192,6 +193,121 @@ verified_by = "a-human"
 
     errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
     assert any("is not one of" in error for error in errors)
+
+
+def test_duplicate_path_entry_is_detected(fixture_tree):
+    """Two `[[fixture]]` blocks for the same path, even byte-identical ones,
+    is itself the fault — found directly during DIAG-06 (#56): `--update`
+    runs across several past commits had silently accumulated duplicate
+    entries (one path recorded 5 times on `main`), undetected because
+    nothing ever checked for this.
+    """
+    fixtures_dir, fixture = fixture_tree
+    entry = f"""
+[[fixture]]
+path = "databases/example.dbc"
+sha256 = "{check_fixtures.sha256_of(fixture)}"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for this test"
+added = "2026-08-14"
+verified_by = "a-human"
+description = "Minimal DBC"
+"""
+    write_manifest(fixtures_dir, entry + entry)  # the same block, twice
+
+    errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
+
+    assert any("databases/example.dbc" in error and "recorded 2 times" in error for error in errors)
+
+
+def test_three_duplicate_entries_are_still_detected(fixture_tree):
+    fixtures_dir, fixture = fixture_tree
+    entry = f"""
+[[fixture]]
+path = "databases/example.dbc"
+sha256 = "{check_fixtures.sha256_of(fixture)}"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for this test"
+added = "2026-08-14"
+verified_by = "a-human"
+description = "Minimal DBC"
+"""
+    write_manifest(fixtures_dir, entry * 3)
+
+    errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
+
+    assert any("databases/example.dbc" in error and "recorded 3 times" in error for error in errors)
+
+
+def test_disagreeing_duplicate_entries_are_detected():
+    """Multiplicity is the fault regardless of whether the duplicates agree
+    with each other — two *conflicting* entries for the same path is the
+    scenario that actually matters (verify() must not silently pick one).
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        fixtures_dir = Path(tmp) / "fixtures"
+        fixtures_dir.mkdir()
+        fixture = fixtures_dir / "sample.dbc"
+        fixture.write_text("x\n", encoding="utf-8")
+        real_hash = check_fixtures.sha256_of(fixture)
+        # A valid sha256 of *different* content (not the fixture's own), so
+        # this exercises duplicate detection specifically -- isolated from
+        # the separate, already-existing CONTENT CHANGED check.
+        other_hash = check_fixtures.sha256_of(Path(__file__))
+        write_manifest(
+            fixtures_dir,
+            f"""
+[[fixture]]
+path = "sample.dbc"
+sha256 = "{real_hash}"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for this test"
+added = "2026-08-14"
+verified_by = "a-human"
+
+[[fixture]]
+path = "sample.dbc"
+sha256 = "{other_hash}"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "A different, conflicting claim about the same file"
+added = "2026-08-15"
+verified_by = "someone-else"
+""",
+        )
+
+        errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
+
+        assert any("sample.dbc" in error and "recorded 2 times" in error for error in errors)
+
+
+def test_multiple_distinct_paths_each_appearing_once_is_not_flagged(fixture_tree):
+    fixtures_dir, _ = fixture_tree
+    second = fixtures_dir / "databases" / "second.dbc"
+    second.write_text("BO_ 200 Second: 8 ECU\n", encoding="utf-8")
+
+    existing = (fixtures_dir / "provenance.toml").read_text(encoding="utf-8")
+    write_manifest(
+        fixtures_dir,
+        existing
+        + f"""
+[[fixture]]
+path = "databases/second.dbc"
+sha256 = "{check_fixtures.sha256_of(second)}"
+origin = "self-authored"
+licence = "Apache-2.0"
+source = "Written for this test"
+added = "2026-08-14"
+verified_by = "a-human"
+description = "A second, distinct fixture"
+""",
+    )
+
+    errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
+    assert errors == []
 
 
 def test_live_fixture_corpus_is_intact():
