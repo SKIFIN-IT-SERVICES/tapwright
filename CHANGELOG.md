@@ -8,6 +8,22 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Docs site + executable examples, doctest in CI** (INF-08,
+  `FW-REQ-066`; #59): `docs/quickstart.md`'s DBC-decode example is
+  verified via Python's stdlib `doctest`, using the same golden fixture
+  and expected values as `tests/differential/test_dbc_decode.py`'s own
+  oracle, so the two can never silently disagree. `mkdocs.yml` builds
+  `docs/`'s existing markdown into a site (`mkdocs build --strict` in
+  CI catches broken nav/links) — deliberately not deployed to GitHub
+  Pages here, since that's a repository-settings change out of scope for
+  an issue worked on autonomously. **Priority correction, flagged in
+  #59**: `LOOPS.md`'s own summary line lumped this in with INF-07 as
+  Should, but the plan's own loop table (and `FW-REQ-066` independently)
+  rate it Must. **Scope correction, also flagged**: the plan assumed a
+  nine-lab `knowledge-base/05-training-labs/` sequence already existed to
+  seed this from; it doesn't exist anywhere in the repository, so this
+  loop is scoped to what its own literal oracle requires (every code
+  sample in docs runs in CI) rather than a full curriculum.
 - **ODX/PDX read-only import, DID/routine name resolution** (DIAG-06,
   `TOOL-REQ-025`; #55): `tapwright.diag.odx_import.load_pdx()`/`load_odx()`
   wrap `odxtools` (MIT, new core dependency) rather than reimplementing

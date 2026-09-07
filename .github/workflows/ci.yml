@@ -176,6 +176,20 @@ jobs:
       - run: pip install -e ".[dev,mdf4]"
       - run: pytest tests/differential/test_mdf4_io.py -v
 
+  docs:
+    name: Docs (INF-08)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/unit/test_docs.py -v
+      # The actual "site live" proof: fails on any broken nav entry or
+      # internal link, not just on Python import errors.
+      - run: mkdocs build --strict
+
   coverage-ratchet:
     name: Coverage ratchet (L0-L2)
     runs-on: ubuntu-latest
