@@ -22,11 +22,12 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**27 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
+**28 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
 its own note; 🔵 below — closed on `main`, CI-verified; four partials, 🔵
 with a note, count as "landed but not formally signed off"):
-INF-01–05, HAL-01/02/07/08, DIAG-01–06, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 71% of the
+INF-01–05, INF-08, HAL-01/02/07/08, DIAG-01–06, DIAG-09, RUN-01, RUN-03,
+RUN-04, RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 74%
+of the
 loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
@@ -35,7 +36,7 @@ from the first is worse than one surface, even an imperfect one) and
 didn't map cleanly onto the plan's own M1–M6 loop groupings in the first
 place.
 
-Substrate (INF) is done except INF-07/08 (Should). L0 (HAL) has everything
+Substrate (INF) is done except INF-07 (Should). L0 (HAL) has everything
 buildable without physical hardware done — `vcan`, LGPL isolation
 (HAL-08), and capability detection (HAL-07); HAL-03–06 are blocked on
 physical hardware sign-off, a named human task, not an agent one. L2
@@ -65,7 +66,26 @@ subscribe/filter still ahead of it.
 | INF-05 | **Virtual UDS/DoIP ECU** on `vcan`, scenario-configurable, failure injection | P | T3 | 8 | 🔵 | **Highest leverage in the plan.** Implemented at `src/tapwright/diag/virtual_ecu/` (moved from the test-plan's original `tools/virtual_ecu/` location — `TOOL-REQ-026` requires it importable from the installed package). UDS-**over-CAN only** (`0x10`/`0x22`/`0x2E`/`0x19`/`0x27`-mechanics); DoIP not yet built. All 4 failure-injection kinds implemented and CI-verified. **All 9 CI jobs green on PR #10, including T2 (vcan) and T3 (all 19 differential cases vs. a stock `udsoncan` client)** — the full oracle passed. 41 T1 unit tests + 24 T2/T3 vcan-gated tests, all real. Open item: PR #10 review/merge |
 | INF-06 | `AGENTS.md` + CODEOWNERS + blast-radius config | D | T0 | 1 | 🔵 | Drafted and merged (#6). **This is a D loop — it closes on human review, not on CI**, so still formally open. `CODEOWNERS` references `@SKIFIN-IT-SERVICES/maintainers`, unverified as an actual GitHub team |
 | INF-07 | Loop telemetry: iterations-to-green, human-touch, escapes | X | T1 | 3 | 🔴 | Should. This file auto-updates from CI metadata |
-| INF-08 | Docs site + executable examples (doctest in CI) | X | T1 | 4 | 🔴 | Seed from `knowledge-base/05-training-labs/` |
+| INF-08 | Docs site + executable examples (doctest in CI) | X | T1 | 4 | 🔵 | Priority corrected to Must — see closeout note below |
+
+> **INF-08 closed** (#59, PR #60): `docs/quickstart.md`'s DBC-decode
+> example is verified via Python's stdlib `doctest`, using the same
+> golden fixture and expected values as
+> `tests/differential/test_dbc_decode.py`'s own oracle, so the two can
+> never silently disagree. `mkdocs.yml` builds `docs/`'s existing
+> markdown into a site; a new `docs` CI job runs `mkdocs build --strict`
+> as the actual "site live" proof. **Priority correction, flagged in
+> #59**: this file's own summary line lumped INF-08 in with INF-07 as
+> Should, but the plan's own loop table (and `FW-REQ-066` independently)
+> rate it Must — corrected in the Status column above. **Scope
+> correction, also flagged**: the plan assumed a nine-lab
+> `knowledge-base/05-training-labs/` sequence already existed to seed
+> this from ("INF-08 already has a first draft written"); it does not
+> exist anywhere in this repository, so this loop was scoped to what its
+> own literal oracle requires (every code sample in docs runs in CI), not
+> a full curriculum. Deliberately not deployed to GitHub Pages — a
+> repository-settings change out of scope for an issue worked on
+> autonomously. All CI jobs green.
 
 > **INF-05 gates almost everything** (plan §6.1). Any slip there is a
 > project-level risk, not a loop-level one.
