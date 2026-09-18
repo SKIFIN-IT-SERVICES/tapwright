@@ -8,6 +8,21 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **GitLab CI example** (RUN-07, `TOOL-REQ-034`; #63): `examples/gitlab-ci/`
+  mirrors `examples/github-actions/` (RUN-06) — same test logic, same
+  `requirements.txt`, a `.gitlab-ci.yml` pipeline instead of a GitHub
+  Actions workflow. **Scope correction, flagged in #63**: unlike RUN-06,
+  there's no GitLab account/project available to actually run a real
+  pipeline against, so this is verified via the test file's core logic
+  matching RUN-06's proven example and `.gitlab-ci.yml` validating against
+  GitLab's own official JSON Schema for the format — not a real
+  run-and-observed-green pipeline. GitLab's public CI Lint API (the
+  original plan) turned out to have had its no-account global endpoint
+  removed in GitLab 16.0, confirmed directly while building this. Also
+  documents an open, unconfirmed question: whether GitLab.com's shared
+  (Docker-executor) runners grant the `NET_ADMIN` capability `vcan` needs
+  to come up at all, unlike GitHub Actions' bare-VM runners where it just
+  works.
 - **Loop telemetry: escape rate and fixture-tamper attempts** (INF-07;
   #61): `tools/loop_telemetry.py` computes the two of the plan's six
   §8 metrics that are mechanically derivable from existing git/GitHub
