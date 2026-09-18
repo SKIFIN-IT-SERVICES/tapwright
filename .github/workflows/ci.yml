@@ -162,6 +162,27 @@ jobs:
         env:
           TAPWRIGHT_CHANNEL: vcan0
 
+  example-gitlab-ci:
+    name: Example — GitLab CI (RUN-07)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # backstop: bring-up-vcan bounds its own apt-get retries
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - uses: ./.github/actions/bring-up-vcan
+      # Proves the example's own test works against the current branch,
+      # same as example-github-actions above -- NOT a real GitLab CI
+      # pipeline run (no GitLab account/project available; see
+      # examples/gitlab-ci/README.md). tests/unit/test_gitlab_ci_example.py
+      # covers the .gitlab-ci.yml file itself (schema validation, no drift
+      # vs. the GitHub Actions example).
+      - run: pip install -e ".[dev]"
+      - run: pytest examples/gitlab-ci/test_vin_read.py tests/unit/test_gitlab_ci_example.py -v
+        env:
+          TAPWRIGHT_CHANNEL: vcan0
+
   mdf4-extra:
     name: MDF4 extra (BUS-06)
     runs-on: ubuntu-latest

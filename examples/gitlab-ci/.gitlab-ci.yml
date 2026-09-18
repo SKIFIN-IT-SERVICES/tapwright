@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# RUN-07 (TOOL-REQ-034): the copy-pasteable pipeline a tapwright consumer
+# would use on GitLab CI. Mirrors examples/github-actions/'s own workflow
+# as closely as GitLab's syntax allows.
+#
+# NOT RUN-AND-OBSERVED-GREEN ON REAL GITLAB CI -- see this directory's
+# own README.md for why, and for the specific open question (NET_ADMIN
+# availability on GitLab.com's shared runners) that would need confirming
+# by whoever has real GitLab access. Validated only against GitLab's own
+# official JSON Schema for this format (the CI Lint API's no-account
+# global endpoint was removed in GitLab 16.0).
+#
+# GitLab.com's shared runners default to Docker-executor containers,
+# unlike GitHub Actions' bare-VM ubuntu-latest runners where HAL-08's
+# bring-up-vcan composite action's sudo modprobe/ip link commands work
+# directly against the host kernel. vcan only needs NET_ADMIN to
+# auto-load (it's a netdev module, not an arbitrary kernel module), not
+# full privileged mode -- but whether NET_ADMIN is grantable per-job here
+# via .gitlab-ci.yml, versus only via runner-admin config unavailable to
+# a regular project owner on the shared fleet, is unconfirmed. If this
+# pipeline fails at the "bring up vcan0" job with a permission error,
+# that is almost certainly why.
+#
+# To use this in your own repo: copy this file to the root of your
+# project as .gitlab-ci.yml and adjust the install step for your own
+# project layout.
+
+image: python:3.10
+
+test:
+  stage: test
+  variables:
+    TAPWRIGHT_CHANNEL: vcan0
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq iproute2 kmod
+    - modprobe vcan
+    - ip link add dev vcan0 type vcan
+    - ip link set up vcan0
+  script:
+    - pip install -r requirements.txt
+    - pytest
