@@ -22,12 +22,11 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**28 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
+**29 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
 its own note; 🔵 below — closed on `main`, CI-verified; four partials, 🔵
 with a note, count as "landed but not formally signed off"):
-INF-01–05, INF-08, HAL-01/02/07/08, DIAG-01–06, DIAG-09, RUN-01, RUN-03,
-RUN-04, RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 74%
-of the
+INF-01–08, HAL-01/02/07/08, DIAG-01–06, DIAG-09, RUN-01, RUN-03, RUN-04,
+RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 76% of the
 loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
@@ -36,7 +35,7 @@ from the first is worse than one surface, even an imperfect one) and
 didn't map cleanly onto the plan's own M1–M6 loop groupings in the first
 place.
 
-Substrate (INF) is done except INF-07 (Should). L0 (HAL) has everything
+Substrate (INF) is fully done. L0 (HAL) has everything
 buildable without physical hardware done — `vcan`, LGPL isolation
 (HAL-08), and capability detection (HAL-07); HAL-03–06 are blocked on
 physical hardware sign-off, a named human task, not an agent one. L2
@@ -65,7 +64,7 @@ subscribe/filter still ahead of it.
 | INF-04 | Fixture corpus scaffolding + provenance manifest format | X | T1 | 3 | ✅ | Format, validator, and hash-based tamper detection in place and merged (#6). Corpus itself is empty until BUS-01/INF-05 need fixtures — that's by design, not a gap |
 | INF-05 | **Virtual UDS/DoIP ECU** on `vcan`, scenario-configurable, failure injection | P | T3 | 8 | 🔵 | **Highest leverage in the plan.** Implemented at `src/tapwright/diag/virtual_ecu/` (moved from the test-plan's original `tools/virtual_ecu/` location — `TOOL-REQ-026` requires it importable from the installed package). UDS-**over-CAN only** (`0x10`/`0x22`/`0x2E`/`0x19`/`0x27`-mechanics); DoIP not yet built. All 4 failure-injection kinds implemented and CI-verified. **All 9 CI jobs green on PR #10, including T2 (vcan) and T3 (all 19 differential cases vs. a stock `udsoncan` client)** — the full oracle passed. 41 T1 unit tests + 24 T2/T3 vcan-gated tests, all real. Open item: PR #10 review/merge |
 | INF-06 | `AGENTS.md` + CODEOWNERS + blast-radius config | D | T0 | 1 | 🔵 | Drafted and merged (#6). **This is a D loop — it closes on human review, not on CI**, so still formally open. `CODEOWNERS` references `@SKIFIN-IT-SERVICES/maintainers`, unverified as an actual GitHub team |
-| INF-07 | Loop telemetry: iterations-to-green, human-touch, escapes | X | T1 | 3 | 🔴 | Should. This file auto-updates from CI metadata |
+| INF-07 | Loop telemetry: iterations-to-green, human-touch, escapes | X | T1 | 3 | 🔵 | Should. Scoped to escape rate + fixture-tamper attempts only — see closeout note below |
 | INF-08 | Docs site + executable examples (doctest in CI) | X | T1 | 4 | 🔵 | Priority corrected to Must — see closeout note below |
 
 > **INF-08 closed** (#59, PR #60): `docs/quickstart.md`'s DBC-decode
@@ -86,6 +85,27 @@ subscribe/filter still ahead of it.
 > a full curriculum. Deliberately not deployed to GitHub Pages — a
 > repository-settings change out of scope for an issue worked on
 > autonomously. All CI jobs green.
+
+> **INF-07 closed** (#61, PR #62): `tools/loop_telemetry.py` computes the
+> two of the plan's §8 metrics that are mechanically derivable from
+> existing git/GitHub history — **escape rate** (`needs-rca` issues ÷
+> this file's own closed-loop count) and **fixture-tamper attempts**
+> (commits carrying a `fixture-change:` trailer). **Scope decision,
+> confirmed with the user before starting**: §8 names six metrics total;
+> the other four (iterations-to-green, human-touch rate, oracle coverage,
+> blast-radius violations) have no structured record anywhere for any
+> closed loop, this session's or earlier — reported as "not computed"
+> rather than fabricated. **A real bug caught while writing this**: the
+> trailer is matched as its own line (`^fixture-change:`), not a bare
+> substring like `check_blast_radius.py`'s own (narrower-scoped, so
+> unaffected) check — a naive substring match over this file's full
+> history would have miscounted two commits that merely *mention* the
+> trailer convention in prose as real tamper attempts. **Also scoped down
+> from the oracle's literal "auto-updates" wording**: a new CI job prints
+> the report to the GitHub Actions job summary rather than auto-committing
+> back to this file — a bot writing to the repo's own tracked files from
+> an automated job is a bigger, separate design decision, flagged in #61
+> rather than silently implemented. All CI jobs green.
 
 > **INF-05 gates almost everything** (plan §6.1). Any slip there is a
 > project-level risk, not a loop-level one.
@@ -589,17 +609,22 @@ subscribe/filter still ahead of it.
 
 ## Loop telemetry
 
-Populated by INF-07 once it lands. Until then, filled in by hand at each loop
-close. Targets are from plan §8.
+Escape rate and fixture-tamper attempts are computed by `tools/loop_telemetry.py`
+(INF-07) and printed to each CI run's job summary — not auto-committed here (a
+bot writing to this file from an automated job was a deliberate scope
+exclusion, see INF-07's own closeout note above), so these two rows are
+refreshed by hand from the latest run rather than live. The other four rows
+have no structured record anywhere and are not computed at all — see INF-07's
+own closeout note for why. Targets are from plan §8.
 
 | Metric | Target | Current |
 |---|---|---|
-| Iterations-to-green (median, W/P/I) | ≤ 8 | — |
-| Human-touch rate (W/P/I/H) | < 30% | — |
-| **Escape rate** (defects found after loop close) | **< 0.2** | — |
-| Oracle coverage (loops reaching declared tier) | 100% | — |
-| Fixture-tamper attempts (guardrail blocks) | track, don't target | 0 |
-| Blast-radius violations | → 0 | 0 |
+| Iterations-to-green (median, W/P/I) | ≤ 8 | not computed — no structured record |
+| Human-touch rate (W/P/I/H) | < 30% | not computed — no structured record |
+| **Escape rate** (defects found after loop close) | **< 0.2** | **0.0** (0 `needs-rca` issues / 29 closed loops, as of PR #62) |
+| Oracle coverage (loops reaching declared tier) | 100% | not computed — no structured record |
+| Fixture-tamper attempts (guardrail blocks) | track, don't target | 0 (as of PR #62) |
+| Blast-radius violations | → 0 | not computed — no structured record |
 | Time-to-first-green-test | < 1 hour | not yet measured |
 
 Escape rate is the one that matters. Everything else measures efficiency; escape
