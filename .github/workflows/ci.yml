@@ -190,6 +190,29 @@ jobs:
       # internal link, not just on Python import errors.
       - run: mkdocs build --strict
 
+  loop-telemetry:
+    name: Loop telemetry (INF-07)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needs full history for the fixture-change: trailer scan
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/unit/test_loop_telemetry.py -v
+      # Not wrapped in pytest: this is the report itself, surfaced where a
+      # human actually looks -- the job summary, not a repo-file
+      # auto-commit (see issue #61 for why auto-committing was ruled out).
+      - name: Report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/loop_telemetry.py >> "$GITHUB_STEP_SUMMARY"
+
   coverage-ratchet:
     name: Coverage ratchet (L0-L2)
     runs-on: ubuntu-latest
