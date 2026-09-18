@@ -8,6 +8,21 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **Loop telemetry: escape rate and fixture-tamper attempts** (INF-07;
+  #61): `tools/loop_telemetry.py` computes the two of the plan's six
+  §8 metrics that are mechanically derivable from existing git/GitHub
+  history — escape rate (`needs-rca` issues ÷ closed loops) and
+  fixture-tamper attempts (commits carrying a `fixture-change:` trailer,
+  matched as its own line rather than a bare substring — found directly
+  that two of this repo's own commits *mention* the trailer convention in
+  prose without carrying one, which a naive substring match would have
+  miscounted). The other four metrics (iterations-to-green, human-touch
+  rate, oracle coverage, blast-radius violations) have no structured
+  record anywhere and are reported as "not computed" rather than
+  fabricated. A new CI job prints the report to the GitHub Actions job
+  summary rather than auto-committing back to `LOOPS.md` — a repo-write
+  from an automated job is a bigger, separate design decision, flagged
+  rather than silently implemented.
 - **Docs site + executable examples, doctest in CI** (INF-08,
   `FW-REQ-066`; #59): `docs/quickstart.md`'s DBC-decode example is
   verified via Python's stdlib `doctest`, using the same golden fixture
