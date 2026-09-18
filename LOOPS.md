@@ -22,11 +22,12 @@ D=design · *Tier* = highest required verification tier (plan §3) ·
 
 ## Progress
 
-**29 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
-its own note; 🔵 below — closed on `main`, CI-verified; four partials, 🔵
+**30 of 38 loops closed** (37 from the plan plus RUN-10, added here — see
+its own note; 🔵 below — closed on `main`, CI-verified; five partials, 🔵
 with a note, count as "landed but not formally signed off"):
 INF-01–08, HAL-01/02/07/08, DIAG-01–06, DIAG-09, RUN-01, RUN-03, RUN-04,
-RUN-05, RUN-06, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 76% of the
+RUN-05, RUN-06, RUN-07, RUN-08, RUN-10, BUS-01/02/05/06/07. Roughly 79%
+of the
 loop count — see
 each section's table below for per-loop detail; this line replaces the
 former per-milestone rollup table, which drifted out of sync with the
@@ -46,8 +47,10 @@ process-boundary interception point** `docs/architecture.md` §4 requires,
 with the SOVD loop deliberately not started (Won't-scope per Phase 0/1's
 own requirements catalog — see DIAG-07's note). L3 (RUN) now has its
 fixture layer, a named CLI entry point, a container image build, both
-HTML and JSON reports, **and a benchmarked cold-clone CI example**, with
-the declarative-YAML loop still ahead. **L1 (BUS) now has
+HTML and JSON reports, **a benchmarked cold-clone GitHub Actions
+example, and a GitLab CI example** (unverified on a real GitLab pipeline
+— see RUN-07's note), with the declarative-YAML loop still ahead. **L1
+(BUS) now has
 DBC and ARXML decode both first-class, BLF/ASC/MDF4 trace I/O, and
 single/multi-message cyclic-send**, with LDF, A2L, and signal-level
 subscribe/filter still ahead of it.
@@ -483,7 +486,7 @@ subscribe/filter still ahead of it.
 | RUN-04 | JSON / ATX-style machine-readable report | W | T2 | 4 | Should | 🔵 |
 | RUN-05 | Unified CLI — one entry point for all three invocation modes | D+I | T2 | 5 | Must | 🔵 |
 | RUN-06 | GitHub Actions example + reusable composite action | X | T2 | 4 | Must | 🔵 |
-| RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔴 |
+| RUN-07 | GitLab CI example | X | T2 | 3 | Should | 🔵 with a note |
 | RUN-08 | Container image published alongside PyPI package | X | T2 | 4 | Must | 🔵 with a note |
 | RUN-09 | Time-to-first-green-test < 1 hour, measured on real users | D | T5 | 4 | Must | 🔴 |
 | RUN-10 | Deterministic wait helpers (`wait_for_message`/`wait_for_signal`/`wait_for_response`) | W | T2 | 5 | Must | 🔵 |
@@ -601,6 +604,27 @@ subscribe/filter still ahead of it.
 > job runs the example's own test against the current source on every
 > push, so "goes green from a cold clone" is proven by CI itself. All 11
 > CI jobs green.
+
+> **RUN-07** (#63, PR #64): `examples/gitlab-ci/` mirrors
+> `examples/github-actions/` — same test logic, same `requirements.txt`,
+> a `.gitlab-ci.yml` pipeline instead of a GitHub Actions workflow.
+> **Marked "with a note"**: unlike RUN-06, no GitLab account/project was
+> available to run a real pipeline against, so "goes green from a cold
+> clone" is unverified on the actual target platform — verified instead
+> via the test file's core logic matching RUN-06's own proven example and
+> `.gitlab-ci.yml` validating against GitLab's own official JSON Schema.
+> **A correction made mid-loop**: GitLab's public CI Lint API (the
+> original verification plan) turned out to have had its no-account
+> global endpoint removed in GitLab 16.0, confirmed directly while
+> building this — schema validation against GitLab's own official schema
+> (the same one their web IDE editor uses) is the closest real,
+> no-account equivalent still available. **An open question, documented
+> rather than glossed over**: whether GitLab.com's shared (Docker-executor)
+> runners grant the `NET_ADMIN` capability `vcan` needs to come up at all
+> — unlike GitHub Actions' bare-VM runners where it just works against
+> the host kernel; researched but found genuinely inconclusive. Flagged
+> in `examples/gitlab-ci/README.md` for whoever has real GitLab access to
+> confirm. All CI jobs green.
 
 > **RUN-09 is human-led by design.** Its oracle is a stopwatch and a person who
 > has never seen the tool. Run it at least twice with different subjects.
