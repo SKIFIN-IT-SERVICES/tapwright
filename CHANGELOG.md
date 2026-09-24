@@ -8,6 +8,22 @@ All notable changes to this project are documented here. Format follows
 
 ### Added
 
+- **A2L read-only parse, ECU variable name/address resolution** (BUS-04,
+  `TOOL-REQ-017`; #65): `tapwright.dbc_arxml.load_a2l()` wraps `pya2l`'s
+  own `A2lParser`/`tree_from_a2l()` API. **Accepted licensing risk, per
+  explicit team decision**: `pya2l`'s Python wrapper is BSD-3-Clause, but
+  its wheel bundles ~300MB of compiled native binaries with no disclosed
+  license or provenance of their own — an unverifiable-license risk, not
+  a known-but-restrictive one like `python-can`/`asammdf`'s LGPL-3.0. The
+  team discussed this directly and chose to accept it and proceed rather
+  than wait for a licensing answer, drop the loop, or hand-roll a parser
+  — see `licences.toml`'s own `pya2l` entry and `a2l_import.py`'s module
+  docstring for the full record. Read-only, no calibration write, and
+  `A2lDatabase` exposes no write/save method at all — checked directly
+  against the loop's own oracle ("assert no write API is exposed"). New
+  self-authored fixture `fixtures/a2l/engine_ecu.a2l`, hand-written
+  directly (A2L's syntax doesn't need a generator script the way ODX/PDX
+  did for DIAG-06).
 - **GitLab CI example** (RUN-07, `TOOL-REQ-034`; #63): `examples/gitlab-ci/`
   mirrors `examples/github-actions/` (RUN-06) — same test logic, same
   `requirements.txt`, a `.gitlab-ci.yml` pipeline instead of a GitHub
@@ -363,6 +379,18 @@ All notable changes to this project are documented here. Format follows
 
 ### Fixed
 
+- **`tools/check_fixtures.py`'s `--update` actually fixed this time**
+  (#56, reopened): the previous fix (below) only added duplicate-entry
+  *detection* to `verify()` — `update()`'s own write logic still had the
+  real bug, reproduced again while adding BUS-04's fixture. Root cause:
+  `update()` found the manifest's header by splitting on a commented-out
+  example of the `[[fixture]]` table marker that no longer existed
+  anywhere in the file; once that marker was gone, the split silently
+  returned the *entire file* as "header," so every run re-appended a
+  fresh copy of every existing entry. Fixed by splitting on the real,
+  load-bearing marker instead. Added the first tests for `update()` —
+  there were none before this, which is how the incomplete first fix
+  went unnoticed.
 - **`tools/check_fixtures.py` never detected duplicate provenance entries**
   (#56): `verify()` now flags more than one `[[fixture]]` block for the
   same path as its own hard error, regardless of whether the duplicates
