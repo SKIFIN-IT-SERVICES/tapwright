@@ -1,0 +1,40 @@
+/begin PROJECT engine_ecu_project "Self-authored golden A2L fixture for tapwright BUS-04"
+    /begin MODULE EngineECU "Engine control unit measurement variables"
+
+        /begin MEASUREMENT
+            EngineSpeed
+            "Current engine speed"
+            UWORD
+            NO_COMPU_METHOD
+            0
+            0
+            0.0
+            8000.0
+            ECU_ADDRESS 0x1A2B3C
+        /end MEASUREMENT
+
+        /begin MEASUREMENT
+            EngineTemperature
+            "Current engine coolant temperature"
+            SWORD
+            NO_COMPU_METHOD
+            0
+            0
+            -40.0
+            215.0
+            ECU_ADDRESS 0x1A2B40
+        /end MEASUREMENT
+
+        /begin MEASUREMENT
+            UnmappedDiagnosticFlag
+            "A measurement variable with no declared ECU_ADDRESS -- e.g. a value only ever read via a diagnostic service, not memory-mapped for direct XCP access"
+            UBYTE
+            NO_COMPU_METHOD
+            0
+            0
+            0.0
+            1.0
+        /end MEASUREMENT
+
+    /end MODULE
+/end PROJECT

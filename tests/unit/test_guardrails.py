@@ -310,6 +310,58 @@ description = "A second, distinct fixture"
     assert errors == []
 
 
+def test_update_is_idempotent(fixture_tree):
+    """The actual bug behind #56/#58's duplicate entries, reproduced and
+    fixed directly: `update()` used to find the manifest's header by
+    splitting on the commented-out example `"# [[fixture]]"`, which had
+    stopped existing in the real file at some point. Once that marker was
+    gone, `.split(...)[0]` silently returned the *entire* file as
+    "header", so every `--update` run re-appended a fresh copy of every
+    existing entry after it — confirmed to reproduce again from a clean,
+    deduplicated `provenance.toml` while adding BUS-04's fixture (#65),
+    proving #58's fix (duplicate detection in `verify()`) never actually
+    addressed `update()` itself. Running `update()` twice in a row must
+    produce the exact same single entry per file both times.
+    """
+    fixtures_dir, _ = fixture_tree
+    manifest_path = fixtures_dir / "provenance.toml"
+
+    check_fixtures.update(fixtures_dir, manifest_path, load_manifest(fixtures_dir))
+    first_pass_errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
+    assert first_pass_errors == []
+
+    check_fixtures.update(fixtures_dir, manifest_path, load_manifest(fixtures_dir))
+    second_pass_errors = check_fixtures.verify(fixtures_dir, load_manifest(fixtures_dir))
+    assert second_pass_errors == []
+
+    text = manifest_path.read_text(encoding="utf-8")
+    assert text.count('path = "databases/example.dbc"') == 1
+
+
+def test_update_preserves_the_header_comment_block(fixture_tree):
+    fixtures_dir, _ = fixture_tree
+    manifest_path = fixtures_dir / "provenance.toml"
+    header_before = manifest_path.read_text(encoding="utf-8").split("[[fixture]]")[0]
+
+    check_fixtures.update(fixtures_dir, manifest_path, load_manifest(fixtures_dir))
+
+    header_after = manifest_path.read_text(encoding="utf-8").split("[[fixture]]")[0]
+    assert header_after.rstrip() == header_before.rstrip()
+
+
+def test_update_stubs_exactly_one_entry_for_a_new_fixture(fixture_tree):
+    fixtures_dir, _ = fixture_tree
+    manifest_path = fixtures_dir / "provenance.toml"
+    new_fixture = fixtures_dir / "databases" / "second.dbc"
+    new_fixture.write_text("BO_ 200 Second: 8 ECU\n", encoding="utf-8")
+
+    check_fixtures.update(fixtures_dir, manifest_path, load_manifest(fixtures_dir))
+
+    text = manifest_path.read_text(encoding="utf-8")
+    assert text.count('path = "databases/second.dbc"') == 1
+    assert text.count('path = "databases/example.dbc"') == 1
+
+
 def test_live_fixture_corpus_is_intact():
     assert check_fixtures.main([]) == 0
 

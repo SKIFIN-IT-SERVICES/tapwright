@@ -56,6 +56,12 @@ dependencies = [
     "pytest-html>=4.2",  # RUN-03: HTML report, wraps rather than reimplements
     "pytest-json-report>=1.5",  # RUN-04: JSON report, wraps rather than reimplements
     "odxtools>=11",  # DIAG-06: ODX/PDX read-only import, MIT, no isolation needed
+    # BUS-04: A2L read-only parse. pya2l's Python wrapper is BSD-3-Clause,
+    # but its bundled compiled binaries carry no disclosed license --
+    # an ACCEPTED, TEAM-DECIDED RISK (issue #65), not a clean bill of
+    # health. See licences.toml's own entry and a2l_import.py's docstring
+    # before touching this dependency.
+    "pya2l>=0.2",
 ]
 
 [project.optional-dependencies]
@@ -111,6 +117,13 @@ select = ["E", "F", "I", "UP", "B"]
 python_version = "3.10"
 warn_unused_configs = true
 warn_redundant_casts = true
+
+# pya2l ships no type stubs or py.typed marker (BUS-04) -- its own AST
+# nodes are untyped protobuf-backed objects, not something worth typing
+# here on tapwright's side either (see a2l_import.py's own noqa: ANN001).
+[[tool.mypy.overrides]]
+module = "pya2l.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

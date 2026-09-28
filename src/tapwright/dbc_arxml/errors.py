@@ -23,3 +23,19 @@ class UnknownMessageError(DbcArxmlError):
     """A frame ID or message name has no corresponding message in the
     loaded database — raised here rather than surfacing a bare KeyError
     from deep inside cantools."""
+
+
+class A2lLoadError(DbcArxmlError):
+    """An A2L file could not be loaded — missing, unreadable, or not a
+    valid A2L file (BUS-04)."""
+
+
+class UnknownVariableError(DbcArxmlError):
+    """No MEASUREMENT record with the given name exists in the loaded A2L
+    file."""
+
+
+class NoAddressError(DbcArxmlError):
+    """The named measurement variable exists but declares no ECU_ADDRESS
+    — e.g. a value only ever read via a diagnostic service, not
+    memory-mapped for direct XCP access."""

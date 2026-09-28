@@ -188,7 +188,19 @@ def update(fixtures_dir: Path, manifest_path: Path, manifest: dict[str, Any]) ->
         lines.append(f'description = "{entry.get("description", "")}"')
         lines.append("")
 
-    header = manifest_path.read_text(encoding="utf-8").split("# [[fixture]]")[0].rstrip()
+    # Split on the real, load-bearing `[[fixture]]` table marker -- not a
+    # commented-out example of it, which is fragile: this script used to
+    # split on `"# [[fixture]]"`, a comment that no longer exists anywhere
+    # in the file (it must have been edited out of the header at some
+    # point). Once that marker vanished, `.split(...)[0]` silently returned
+    # the *entire* file as "header", so every `--update` run re-appended a
+    # fresh copy of every existing entry after it -- confirmed directly:
+    # this had already left 5 duplicate entries for one path in
+    # `provenance.toml` on `main` (see #56/#58) and reproduced again from a
+    # clean, deduplicated file while adding BUS-04's fixture (#65). #58
+    # only added detection for this (`verify()`'s duplicate-path check);
+    # this is the actual fix.
+    header = manifest_path.read_text(encoding="utf-8").split("[[fixture]]")[0].rstrip()
     body = "\n".join(lines).rstrip()
     manifest_path.write_text(f"{header}\n\n{body}\n", encoding="utf-8")
 
